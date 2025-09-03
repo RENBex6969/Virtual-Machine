@@ -1,0 +1,51 @@
+local Net = require("@lune/net")
+local Serde = require("@lune/serde")
+local Task = require("@lune/task")
+local Network = {}
+
+Network.Request = function(Arguments)
+  local Method = Arguments.Method or "GET"
+  local Headers = Arguments.Headers or {
+    ["User-Agent"] = "@/Virtual-Machine (Sandbox)",
+    ["Accept"] = "*/*",
+    ["Accept-Language"] = "en-US,en;q=0.9",
+    ["Virtual-Fingerprint"] = "Virtualized Environment",
+    ["Virtual-User-Identifier"] = "~VM"
+  }
+  if Arguments.Body ~= nil and Method ~= "GET" then
+    Body = Serde.encode("json", Arguments.Body)
+    Headers["Content-Type"] = Headers["Content-Type"] or "application/json"
+  end
+  
+  print("[URL - REQUEST]:", Arguments.Url)
+  local Response = Net.request({
+    url = Arguments.Url,
+    method = Method,
+    headers = Headers,
+    body = Body
+  })
+
+  return {
+    Body = Response.body,
+    Headers = Response.headers,
+    StatusCode = Response.statusCode,
+    StatusMessage = Response.statusMessage
+  }
+end
+
+Network.HttpGet = function(Url)
+  local Response = Network.Request({
+    Url = Url
+  }).Body
+  return Response
+end
+
+Network.HttpPost = function(Url, Body)
+  local Response = Network.Request({
+    Url = Url,
+    Body = Body
+  }).Body
+  return Response
+end
+
+return Network
