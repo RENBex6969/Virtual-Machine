@@ -28,3 +28,6 @@ Sandbox:Run([[
 ### UNC / Unified Naming Convention
 1. Has an **84%** score on the UNC test
 2. Has an **74%** score on the sUNC test (Public August 2024 Version)
+
+### Suggestions
+Sumbit a issue
