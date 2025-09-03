@@ -11,7 +11,7 @@ Game.PlaceId = 0
 Registry.Roblox = Roblox
 Registry.ConnectionsMap = {} -- stores connection tables per RBXScriptSignal
 
-local GameFile = FileSystem.readFile("file.rbxl")
+--local GameFile = FileSystem.readFile("file.rbxl")
 --local Game = Roblox.deserializePlace(GameFile)
 
 local GameMethods = require("./Game/Game/Methods")(Roblox, Network)

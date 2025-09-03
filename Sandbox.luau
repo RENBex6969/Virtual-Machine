@@ -9,15 +9,13 @@ local Sandbox = {}
 function Sandbox:Create()
   local MainDirectory = (debug.info(1, 's')):gsub("Sandbox", "")
   local Registry = getModule("Registry")
-  local Game = require("./Dependency/Game")
+  local Game = getModule("Game")
   local LCore = getModule("LCore")
   local ECore = getModule("ECore")
   local FinalECore = getModule("FinalECore")(ECore, LCore, Game)
   local RobloxAPI = getModule("RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
   local GameShortcuts = getModule("GameShortcuts")(Game)
   RobloxAPI.game = Game
-  
-  
   
   ECore.checkcaller = function()
     local Source = debug.info(1, 's')
