@@ -1,6 +1,6 @@
-  GNU nano 8.4                     README.md
+
 # VM
-Runs roblox **scripts** on a executor environment with a partial *Roblox A>
+Runs roblox **scripts** on a executor environment with a partial **Roblox API**
 
 ### Installation
 1. Install Lune from rokit
@@ -29,6 +29,17 @@ Sandbox:Run([[
 ### UNC / Unified Naming Convention
 1. Has an **84%** score on the UNC test
 2. Has an **75%** score on the sUNC test (Public August 2024 Version)
+
+### Services 
+1. HttpService - Full
+2. DebrisService - Full
+3. RunService - Partial
+4. PlayersService - Partial
+5. RbxAnalyticsService - Partial
+6. UserInputService - Partial
+8. CorePackages - Partial
+9. Lightning - Full
+10. Game - Partial
 
 ### Suggestions
 Sumbit a issue
