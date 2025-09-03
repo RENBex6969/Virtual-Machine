@@ -1,5 +1,6 @@
+  GNU nano 8.4                     README.md
 # VM
-Runs roblox **scripts** on a executor environment with a partial *Roblox API*
+Runs roblox **scripts** on a executor environment with a partial *Roblox A>
 
 ### Installation
 1. Install Lune from rokit
@@ -11,7 +12,7 @@ The VM has bulit in API system you can use it on your scripts!
 
 **Requiring the VM** :
 ```luau
-local Sandbox = require("./Sandbox") -- Adjust thr path to the path of Sandbox.luau
+local Sandbox = require("./Sandbox") -- Adjust thr path to the path of San>
 ```
 
 **Example Script** :
@@ -27,7 +28,7 @@ Sandbox:Run([[
 
 ### UNC / Unified Naming Convention
 1. Has an **84%** score on the UNC test
-2. Has an **74%** score on the sUNC test (Public August 2024 Version)
+2. Has an **75%** score on the sUNC test (Public August 2024 Version)
 
 ### Suggestions
 Sumbit a issue
