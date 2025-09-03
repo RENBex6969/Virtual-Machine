@@ -217,6 +217,9 @@ local ENV; ENV = {
     if type(Function) ~= "function" or Function == nil then
       return false
     end
+    if debug.info(Function, "s") == "/host-env/Sandbox" then
+      return true
+    end
     if debug.info(Function, "s") == "__scheduler_wrap" then
       return true
     end
@@ -244,6 +247,9 @@ local ENV; ENV = {
   end,
   islclosure = function(Function)
     if type(Function) ~= "function" or Function == nil then
+      return false
+    end
+    if debug.info(Function, "s") == "/host-env/Sandbox" then
       return false
     end
     if debug.info(Function, "s") == "__scheduler_wrap" then

