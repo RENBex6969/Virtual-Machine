@@ -148,7 +148,6 @@ return (function(MainDirectory)
           Registry.CachedInstances[Obj] = 'invalid' 
           Obj.Parent = nil
         end)
-        
       end,
       replace = function(Old, New)
         Registry.CachedInstances[Old] = New
@@ -163,7 +162,6 @@ return (function(MainDirectory)
       end
       return false
     end,
-    
     isscriptable = function(Instance, Property)
       assert(typeof(Instance) == "Instance", "Argument #1 to 'isscriptable' must be an Instance, got " .. typeof(Instance))
       if scriptableOverrides[Instance] and scriptableOverrides[Instance][Property] ~= nil then

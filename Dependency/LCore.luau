@@ -66,7 +66,7 @@ local LCore = {
   tostring = function(...)
     return tostring(...)
   end,
-  assert = function(Condition, message, ...)
+  assert = function(Condition, Message, ...)
     if not Condition then
       error(Message or "assertion failed!", 2)
     end

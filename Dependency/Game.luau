@@ -58,6 +58,8 @@ local GroupMethod = require("./Game/GroupService/Methods")(Roblox)
 local SoundProperties = require("./Game/SoundService/Properties")(Roblox)
 local SoundMethods = require("./Game/SoundService/Methods")(Roblox)
 
+--local TextProperties = require("./Game/TextService/Properties")(Roblox)
+local TextMethods = require("./Game/TextService/Methods")(Roblox)
 
 local Instance = Roblox.Instance
 

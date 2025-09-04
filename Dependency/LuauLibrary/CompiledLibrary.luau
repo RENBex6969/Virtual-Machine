@@ -5,6 +5,7 @@ return {
   math = getLibrary("Math"),
   table = getLibrary("Table"),
   task = getLibrary("Task"),
+  buffer = getLibrary("Buffer"),
   bit = getLibrary("Bit"),
   bit32 = bit32,
   os = os,

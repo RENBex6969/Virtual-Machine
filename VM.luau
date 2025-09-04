@@ -2,8 +2,20 @@ local VM = require("./Sandbox")
 
 
 VM:Run([=[
-local a = Instance.new("Part")
-a:AddTag("fap")
+local TextService = game:GetService("TextService")
+
+local text = "Hello Roblox!"
+local fontSize = 20
+local font = Enum.Font.SourceSans
+local frameSize = Vector2.new(200, 200)
+
+-- call the API directly
+local textSize = TextService:GetTextSize(text, fontSize, font, frameSize)
+print("TextSize:", textSize)
+
+-- test offset method
+local offset = TextService:GetTextSizeOffsetAsync(fontSize, font)
+print("Offset:", offset)
 --[[
 	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
 ]]
