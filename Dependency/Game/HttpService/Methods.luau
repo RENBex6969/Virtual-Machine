@@ -1,4 +1,4 @@
-return (function(Roblox, Network)
+return (function(Roblox)
   local Serde = require("@lune/serde")
   
   local function randomHex(n)

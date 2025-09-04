@@ -47,6 +47,14 @@ local LocalPlayerMethods = require("./Game/PlayersService/LocalPlayer/Methods")(
 local DebrisMethods = require("./Game/DebrisService/Methods")(Roblox)
 
 
+--local TeleportProperties = require("./Game/TeleportService/Properties")(Roblox, Game)
+local TeleportMethods = require("./Game/TeleportService/Methods")(Roblox)
+
+
+--local GroupProperties = require("./Game/CollectionService/Properties")(Roblox, Game)
+local GroupMethod = require("./Game/CollectionService/Methods")(Roblox)
+
+
 local Instance = Roblox.Instance
 
 for i = 1, 50 do
