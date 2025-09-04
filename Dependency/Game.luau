@@ -43,16 +43,20 @@ local LocalPlayerMethods = require("./Game/PlayersService/LocalPlayer/Methods")(
 --local LocalPlayerProperties = require("./Game/PlayersService/LocalPlayer/Properties")(Roblox)
 --local LocalPlayerEvents
 
---local DebrisProperties = require("./Game/DebrisService/Properties")(Roblox, Game)
+--local DebrisProperties = require("./Game/DebrisService/Properties")(Roblox)
 local DebrisMethods = require("./Game/DebrisService/Methods")(Roblox)
 
 
---local TeleportProperties = require("./Game/TeleportService/Properties")(Roblox, Game)
+--local TeleportProperties = require("./Game/TeleportService/Properties")(Roblox)
 local TeleportMethods = require("./Game/TeleportService/Methods")(Roblox)
 
 
---local GroupProperties = require("./Game/CollectionService/Properties")(Roblox, Game)
-local GroupMethod = require("./Game/CollectionService/Methods")(Roblox)
+--local GroupProperties = require("./Game/GroupService/Properties")(Roblox)
+local GroupMethod = require("./Game/GroupService/Methods")(Roblox)
+
+
+local SoundProperties = require("./Game/SoundService/Properties")(Roblox)
+local SoundMethods = require("./Game/SoundService/Methods")(Roblox)
 
 
 local Instance = Roblox.Instance

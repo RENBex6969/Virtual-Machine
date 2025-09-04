@@ -47,6 +47,7 @@ Impossinle since hookfunction is a low level function that isnt possible to recr
 6. UserInputService - Partial
 7. TeleportService - Partial
 8. GroupService = Full
+9. SoundService = Partial
 
 8. CorePackages - Partial
 9. Lightning - Full
