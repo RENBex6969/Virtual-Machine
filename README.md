@@ -42,17 +42,17 @@ Impossinle since hookfunction is a low level function that isnt possible to recr
 1. HttpService - Full
 2. DebrisService - Full
 3. GroupService = Full
-4. PlayersService - Partial
-5. RbxAnalyticsService - Partial
-6. UserInputService - Partial
-7. TeleportService - Partial
-8. RunService - Partial
-9. SoundService = Partial
-10. TextService = Partial
+4. TextService = Full
+5. PlayersService - Partial
+6. RbxAnalyticsService - Partial
+7. UserInputService - Partial
+8. TeleportService - Partial
+9. RunService - Partial
+10. SoundService = Partial
 
-11. CorePackages - Partial
-12. Lightning - Full
-13. Game - Partial
+1. CorePackages - Partial
+2. Lightning - Full
+3. Game - Partial
 
 ### Suggestions
 Sumbit a issue

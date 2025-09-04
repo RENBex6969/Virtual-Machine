@@ -1,10 +1,24 @@
 return (function(Roblox)
-  Roblox.implementMethod("TextService", "FilterAndTranslateStringAsync", function(_, ...)
-    return
+  Roblox.implementMethod("TextService", "FilterAndTranslateStringAsync", function(_, Text, Player, LanguageCode)
+    return {
+      GetNonChatStringForBroadcastAsync = function(Player)
+        return Text
+      end, 
+      GetNonChatStringForPlayerAsync = function(...) 
+        return Text
+      end,
+    }
   end)
   
-  Roblox.implementMethod("TextService", "FilterStringAsync", function(_, ...)
-    return
+  Roblox.implementMethod("TextService", "FilterStringAsync", function(_, Text, Player)
+    return {
+      GetNonChatStringForBroadcastAsync = function(Player)
+        return Text
+      end, 
+      GetNonChatStringForPlayerAsync = function(...) 
+        return Text
+      end,
+    }
   end)
   
   Roblox.implementMethod("TextService", "GetFamilyInfoAsync", function(_, ...)
