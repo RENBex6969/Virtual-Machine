@@ -117,9 +117,6 @@ return (function(MainDirectory)
       return nil, false
     end,
     isexecutorclosure = function(fn)
-      if type(fn) ~= "function" or fn == nil then
-        return false
-      end
       local src = debug.info(fn, "s") or ""
       src = src:gsub("%s+$", "")
       if src:sub(1, #"/host-env/Dependency/Game/") == "/host-env/Dependency/Game/" then

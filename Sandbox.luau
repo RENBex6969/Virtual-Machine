@@ -22,35 +22,39 @@ function Sandbox:Create()
     local Source = debug.info(1, 's')
     if Source ~= MainDirectory .. "Sandbox" then
       return false
-    end
+    end 
     return true
   end
   
   local MT = {
     __index = function(_, Key)
-      local val = rawget(LCore, Key)
-      if val ~= nil then
-        return val
+      local Source = debug.info(coroutine.running(), 2, "s")
+      if Source == MainDirectory .. "Sandbox" then
+        error("[SECRUITY]: Attempt to escape envrionmemt!", 3)
+      end
+      local Value = rawget(LCore, Key)
+      if Value ~= nil then
+        return Value
       end
       
-      val = rawget(Registry.GlobalVariables, Key)
-      if val ~= nil then
-        return val
+      Value = rawget(Registry.GlobalVariables, Key)
+      if Value ~= nil then
+        return Value
       end
       
-      val = rawget(GameShortcuts, string.lower(Key))
-      if val ~= nil then
-        return val
+      Value = rawget(GameShortcuts, string.lower(Key))
+      if Value ~= nil then
+        return Value
       end
       
-      val = rawget(RobloxAPI, Key)
-      if val ~= nil then
-        return val
+      Value = rawget(RobloxAPI, Key)
+      if Value ~= nil then
+        return Value
       end
       
-      val = rawget(Libraries, Key)
-      if val ~= nil then
-        return val
+      Value = rawget(Libraries, Key)
+      if Value ~= nil then
+        return Value
       end
       
       if Key == "_G" then
@@ -61,8 +65,12 @@ function Sandbox:Create()
       return nil
     end,
     __newindex = function(_, Key, Value)
+      local Source = debug.info(coroutine.running(), 2, "s")
+      if Source == MainDirectory .. "Sandbox" then
+        error("[SECRUITY]: Attempt to escape envrionmemt!", 3)
+      end
       rawset(Registry.GlobalVariables, Key, Value)
-    end
+    end,
   }
   
   return ECore, MT
@@ -87,7 +95,7 @@ function Sandbox:Run(Code, ...)
       return Luau.compile(code, {
         optimizationLevel = 2,
         coverageLevel = 0,
-        debugLevel = 1
+        debugLevel = 2
       })
     end)
     if not IsOk then
@@ -111,7 +119,7 @@ function Sandbox:Run(Code, ...)
     local Bytecode = Luau.compile(ECore.readfile(Path), {
       optimizationLevel = 2,
       coverageLevel = 0,
-      debugLevel = 1
+      debugLevel = 0
     })
     local callableFn = Luau.load(Bytecode, {
       debugName = "[VM - LOADFILE]: " .. Count,
@@ -138,12 +146,10 @@ function Sandbox:Run(Code, ...)
   return Task.spawn(function(...)
     local succ, er = pcall(CompiledFN, ...)
     if er and not succ then
-      print(er)
+      print("[RUNTIME - ERROR]:", er)
     end
     return succ, er
   end)
 end
 
 return Sandbox
-
-

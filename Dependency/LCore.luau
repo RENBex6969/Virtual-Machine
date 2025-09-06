@@ -49,7 +49,9 @@ local LCore = {
       return false, Metatable
     end
     if Results[1] == false then
-      Results[2] = Results[2]:gsub(":%d+:",":1:")
+      pcall(function()
+        Results[2] = Results[2]:gsub(":%d+:",":1:")
+      end)
     end
     local Succ, Err = table.unpack(Results)
     if type(err) == "userdata" then
