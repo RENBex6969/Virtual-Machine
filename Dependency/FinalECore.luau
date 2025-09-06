@@ -1,4 +1,4 @@
-return (function(ECore, LCore, Game)
+return (function(ECore, LCore, Game, Registry)
   ECore.gethui = function()
     return Game:GetService("CoreGui")
   end
@@ -29,6 +29,15 @@ return (function(ECore, LCore, Game)
         return Old
       end
     end
+    
+    for Key, Value in pairs(Registry.GlobalVariables) do
+      if Value == Old then
+        Registry.GlobalVariables[Key] = New
+        return Old
+      end
+    end
+    
+    
     
     local Copy = Old
     Old = New

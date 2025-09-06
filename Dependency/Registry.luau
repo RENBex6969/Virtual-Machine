@@ -14,7 +14,8 @@ local Registry = {
   CallbackStorage = {},
   currentNamecall = "",
   FFlags = {},
-  SecuredInstances = {}
+  SecuredInstances = {},
+  ReadonlyTables = {}
 }
 
 return Registry

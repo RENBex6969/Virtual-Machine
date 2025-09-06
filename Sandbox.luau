@@ -13,7 +13,7 @@ function Sandbox:Create()
   local Game = getModule("Game")
   local LCore = getModule("LCore")
   local ECore = getModule("ECore")(MainDirectory)
-  local FinalECore = getModule("FinalECore")(ECore, LCore, Game)
+  local FinalECore = getModule("FinalECore")(ECore, LCore, Game, Registry)
   local RobloxAPI = getModule("RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
   local GameShortcuts = getModule("GameShortcuts")(Game)
   RobloxAPI.game = Game
@@ -69,6 +69,7 @@ function Sandbox:Create()
       if Source == MainDirectory .. "Sandbox" then
         error("[SECRUITY]: Attempt to escape envrionmemt!", 3)
       end
+      
       rawset(Registry.GlobalVariables, Key, Value)
     end,
   }

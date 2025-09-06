@@ -27,8 +27,8 @@ Sandbox:Run([[
 ```
 
 ### UNC / Unified Naming Convention
-1. Has an **88%** score on the UNC test
-2. Has an **75%** score on the sUNC test (Public August 2024 Version)
+1. Has an **89%** score on the UNC test
+2. Has an **79%** score on the sUNC test (Public August 2024 Version)
 
 ### Not to Implement
 1. **Debug Library - Non** :

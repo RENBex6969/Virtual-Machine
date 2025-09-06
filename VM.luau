@@ -3,6 +3,7 @@ local VM = require("./Sandbox")
 
 VM:Run([=[
 
+
 --[[
 	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
 ]]
@@ -631,6 +632,7 @@ local MyObject = {}
 	setmetatable(MyObject, {
     __index = {
         GetService = function(self)
+        
             method = getnamecallmethod()
             
         end
@@ -862,7 +864,7 @@ test("WebSocket.connect", {}, function()
 		OnClose = {"table", "userdata"},
 	}
 	
-	local ws = WebSocket.connect("wss://echo.websocket.events")
+	local ws = WebSocket.connect("ws://echo.websocket.events")
 	assert(type(ws) == "table" or type(ws) == "userdata", "Did not return a table or userdata")
 	for k, v in pairs(types) do
 		if type(v) == "table" then

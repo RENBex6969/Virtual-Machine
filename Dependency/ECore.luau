@@ -94,6 +94,9 @@ return (function(MainDirectory)
     get_thread_context = function()
       return CurrentThreadIdentity[coroutine.running()] or 9
     end,
+    gettenv = function(Thread)
+      
+    end,
     isdbgpresent = function()
       return true
     end,
@@ -303,10 +306,10 @@ return (function(MainDirectory)
       table.insert(Registry.clonerefs[Object], Clone)
       return Clone
     end,
+    setreadonly = function()
+      
+    end,
     getrawmetatable = function(Table)
-      if type(Table) ~= "table" or Table == nil then
-        return false
-      end
       if Registry.RawMetatables[Table] then
         return Registry.RawMetatables[Table]
       end
@@ -409,7 +412,15 @@ return (function(MainDirectory)
       end
     end,
     getnamecallmethod = function()
-      return Registry.currentNamecall
+      local Traceback = debug.traceback("", 2)
+      local funcs = {}
+      for line in Traceback:gmatch("[^\n]+") do
+        local name = line:match("function%s+([%w_]+)")
+        if name then
+          table.insert(funcs, name)
+        end
+      end
+      return funcs[1]
     end,
     setnamecallmethod = function(Method)
       Registry.currentNamecall = tostring(Method)

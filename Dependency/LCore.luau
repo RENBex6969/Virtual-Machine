@@ -83,8 +83,12 @@ local LCore = {
   select = function(...)
     return select(...)
   end,
-  newproxy = function(...)
-    return newproxy(...)
+  newproxy = function(HasMT)
+    local Userdata = newproxy(HasMT)
+    if HasMT then
+      Registry.RawMetatables[Userdata] = getmetatable(Userdata)
+    end
+    return Userdata
   end,
   unpack = function(...)
     return table.unpack(...)

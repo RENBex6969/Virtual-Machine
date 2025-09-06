@@ -1,5 +1,4 @@
 return (function(Roblox, Network)
-  
   Roblox.implementMethod("DataModel", "HttpGet", function(_, Url, ...)
     return Network.HttpGet(Url)
   end)

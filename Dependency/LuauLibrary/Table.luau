@@ -1,3 +1,6 @@
+local Registry = require("../Registry")
+local ReadonlyTables = Registry.ReadonlyTables
+
 local Table = {
   clear = table.clear,
   clone = table.clone,
@@ -6,10 +9,14 @@ local Table = {
   find = table.find,
   foreach = table.foreach,
   foreachi = table.foreachi,
-  freeze = table.freeze,
+  freeze = function(Table)
+    return table.freeze(Table)
+  end,
   getn = table.getn,
   insert = table.insert,
-  isfrozen = table.isfrozen,
+  isfrozen = function(Table)
+    return table.isfrozen(Table)
+  end,
   maxn = table.maxn,
   move = table.move,
   pack = table.pack,
