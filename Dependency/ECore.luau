@@ -313,6 +313,39 @@ return (function(MainDirectory)
       local Copied = Getrawmetatable(Table)
       return Copied
     end,
+    setrawmetatable = function(Table, Metatable)
+      local MT = Registry.RawMetatables[Table]
+      if MT then
+        local OldMetatable
+        if MT.__metatable then
+          OldMetatable = MT.__metatable
+          MT.__metatable = nil
+        end
+        setmetatable(Table, Metatable)
+        if MT.__metatable then
+          MT.__metatable = OldMetatable
+        end
+        return Table
+      end
+      return nil
+    end,
+    hookmetamethod = function(Table, Index, New)
+      local MT = Registry.RawMetatables[Table]
+      if MT then
+        local OldMetatable
+        if MT.__metatable then
+          OldMetatable = MT.__metatable
+          MT.__metatable = nil
+        end
+        local OldFunc = MT[Index]
+        MT[Index] = New
+        if MT.__metatable then
+          MT.__metatable = OldMetatable
+        end
+        return OldFunc
+      end
+      return nil
+    end,
     getnilinstances = function()
       return Registry.NilInstances
     end,
