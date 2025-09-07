@@ -1,5 +1,4 @@
 
-local Libraries = require("./Dependency/LuauLibrary/CompiledLibrary")
 local Utility = require("./Dependency/Utility")
 local Core = require("./Dependency/Core")
 local Task = require("@lune/task")
@@ -13,9 +12,11 @@ function Sandbox:Create()
   local Game = getModule("Game")
   local LCore = getModule("LCore")
   local ECore = getModule("ECore")(MainDirectory)
+  local Libraries = require("./Dependency/LuauLibrary/CompiledLibrary")(ECore)
   local FinalECore = getModule("FinalECore")(ECore, LCore, Game, Registry)
   local RobloxAPI = getModule("RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
   local GameShortcuts = getModule("GameShortcuts")(Game)
+  
   RobloxAPI.game = Game
   
   ECore.checkcaller = function()
@@ -105,7 +106,7 @@ function Sandbox:Run(Code, ...)
     local IsOk2, callableFn = pcall(function()
       return Luau.load(Bytecode, {
         debugName = string.format("[string \"%s\"]", chunkName),
-        environment = Compiled,
+        environment = setmetatable(ECore, MT),
         injectGlobals = false,
         codegenEnabled = true
       })
@@ -124,7 +125,7 @@ function Sandbox:Run(Code, ...)
     })
     local callableFn = Luau.load(Bytecode, {
       debugName = "[VM - LOADFILE]: " .. Count,
-      environment = Compiled,
+      environment = setmetatable(ECore, MT),
       injectGlobals = false,
       codegenEnabled = true
     })

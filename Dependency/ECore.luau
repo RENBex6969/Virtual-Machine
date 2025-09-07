@@ -30,6 +30,7 @@ return (function(MainDirectory)
   
   local CurrentThreadIdentity = {}
   local SecureFolders = {}
+  local LockedMT = {}
   
   local ENV; ENV = {
     lz4compress = Compression.LZ4.compress,
@@ -156,12 +157,6 @@ return (function(MainDirectory)
         Old.Parent = nil
       end
     },
-    isreadonly = function(Table)
-      if type(Table) == "table" then
-        return table.isfrozen(Table)
-      end
-      return false
-    end,
     isscriptable = function(Instance, Property)
       assert(typeof(Instance) == "Instance", "Argument #1 to 'isscriptable' must be an Instance, got " .. typeof(Instance))
       if scriptableOverrides[Instance] and scriptableOverrides[Instance][Property] ~= nil then
@@ -181,9 +176,12 @@ return (function(MainDirectory)
       return wasScriptable
     end,
     clonefunction = function(Function)
-      return function(...)
+      local ENV = ENV.getfenv(Function)
+      local Compiled = function(...)
         return Function(...)
       end
+      setfenv(Compiled, ENV)
+      return Compiled
     end,
     newcclosure = function(Function)
       local Compiled = coroutine.wrap(function(...)
@@ -306,8 +304,14 @@ return (function(MainDirectory)
       table.insert(Registry.clonerefs[Object], Clone)
       return Clone
     end,
-    setreadonly = function()
+    setreadonly = function(Table, Status)
       
+    end,
+    isreadonly = function(Table)
+      if type(Table) == "table" then
+        return table.isfrozen(Table)
+      end
+      return false
     end,
     getrawmetatable = function(Table)
       if Registry.RawMetatables[Table] then

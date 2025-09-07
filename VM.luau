@@ -3,12 +3,6 @@ local VM = require("./Sandbox")
 
 VM:Run([=[
 
-
---[[
-	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-]]
---loadstring(game:HttpGet("https://byt3c0de.net/byte/loader.lua", true))()
-
 local passes, fails, undefined = 0, 0, 0
 local running = 0
 
@@ -864,7 +858,7 @@ test("WebSocket.connect", {}, function()
 		OnClose = {"table", "userdata"},
 	}
 	
-	local ws = WebSocket.connect("ws://echo.websocket.events")
+	local ws = WebSocket.connect("wss://echo.websocket.org")
 	assert(type(ws) == "table" or type(ws) == "userdata", "Did not return a table or userdata")
 	for k, v in pairs(types) do
 		if type(v) == "table" then
@@ -890,9 +884,6 @@ repeat task.wait() until running == 0
 	]=])
 	
 --[[VM:Run([=[
-local Debris = game:GetService("Debris")
-        local part = Instance.new("Part")
-        Debris:AddItem(part, 5)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/1Softworks/Hyper-UNC/refs/heads/main/hyperunc.lua"))()
+
 
 ]=])]]
