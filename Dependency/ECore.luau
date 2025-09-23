@@ -176,11 +176,9 @@ return (function(MainDirectory)
       return wasScriptable
     end,
     clonefunction = function(Function)
-      local ENV = ENV.getfenv(Function)
       local Compiled = function(...)
         return Function(...)
       end
-      setfenv(Compiled, ENV)
       return Compiled
     end,
     newcclosure = function(Func)

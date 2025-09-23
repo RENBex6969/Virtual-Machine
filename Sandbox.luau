@@ -1,9 +1,11 @@
-
 local Utility = require("./Dependency/Utility")
 local Core = require("./Dependency/Core")
 local Task = require("@lune/task")
 
 local getModule = Utility.getModule
+
+local isMade = false
+local CacheRobloxAPI = {}
 
 local Sandbox = {}
 function Sandbox:Create()
@@ -14,9 +16,17 @@ function Sandbox:Create()
   local ECore = getModule("ECore")(MainDirectory)
   local Libraries = require("./Dependency/LuauLibrary/CompiledLibrary")(ECore)
   local FinalECore = getModule("FinalECore")(ECore, LCore, Game, Registry)
-  local RobloxAPI = getModule("RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
+  local RobloxAPI = {}
+  if isMade == false then
+    RobloxAPI = getModule("RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
+    CacheRobloxAPI = RobloxAPI
+  else
+    RobloxAPI = CacheRobloxAPI
+  end
+  
   local GameShortcuts = getModule("GameShortcuts")(Game)
   
+  isMade = true
   RobloxAPI.game = Game
   
   ECore.checkcaller = function()
@@ -33,6 +43,7 @@ function Sandbox:Create()
       if Source == MainDirectory .. "Sandbox" then
         error("[SECRUITY]: Attempt to escape envrionmemt!", 3)
       end
+      
       local Value = rawget(LCore, Key)
       if Value ~= nil then
         return Value
@@ -91,11 +102,12 @@ function Sandbox:Run(Code, ...)
   
   local Count = 0
   rawset(ECore, "loadstring", function(code, chunkName)
+    
     chunkName = chunkName or "[VM - Loadstring]: " .. Count
     Count = Count + 1
     local IsOk, Bytecode = pcall(function()
       return Luau.compile(code, {
-        optimizationLevel = 2,
+        optimizationLevel = 0,
         coverageLevel = 0,
         debugLevel = 2
       })
@@ -103,34 +115,34 @@ function Sandbox:Run(Code, ...)
     if not IsOk then
       return nil, tostring(Bytecode)
     end
+    
     local IsOk2, callableFn = pcall(function()
       return Luau.load(Bytecode, {
-        debugName = string.format("[string \"%s\"]", chunkName),
-        environment = Compiled,
+        debugName = string.format(chunkName),
+        environment = setmetatable(table.unpack({Sandbox:Create()})),
         injectGlobals = false,
-        codegenEnabled = true
       })
     end)
+    
     if not IsOk2 then
       return nil, tostring(callableFn)
     end
-    return setfenv(callableFn, Compiled)
+    return callableFn
   end)
   
   rawset(ECore, "loadfile", function(Path)
     local Bytecode = Luau.compile(ECore.readfile(Path), {
-      optimizationLevel = 2,
+      optimizationLevel = 0,
       coverageLevel = 0,
       debugLevel = 0
     })
     local callableFn = Luau.load(Bytecode, {
       debugName = "[VM - LOADFILE]: " .. Count,
-      environment = Compiled,
+      environment = setmetatable(table.unpack({Sandbox:Create()})),
       injectGlobals = false,
-      codegenEnabled = true
     })
     Count = Count + 1
-    return setfenv(callableFn, Compiled)
+    return callableFn
   end)
   
   local Bytecode = Luau.compile(Code, {
@@ -138,6 +150,7 @@ function Sandbox:Run(Code, ...)
     coverageLevel = 0,
     debugLevel = 1
   })
+
   local CompiledFN = Luau.load(Bytecode, {
     debugName = "",
     environment = Compiled,
@@ -146,10 +159,15 @@ function Sandbox:Run(Code, ...)
   })
 
   return Task.spawn(function(...)
-    local succ, er = pcall(CompiledFN, ...)
-    if er and not succ then
+    local succ, er = xpcall(function(...) 
+      return CompiledFN(...) 
+    end, function(err) 
+      return debug.traceback(tostring(err), 2) 
+    end, ...)
+    if not succ then
       print("[RUNTIME - ERROR]:", er)
     end
+  
     return succ, er
   end)
 end
