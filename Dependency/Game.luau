@@ -21,7 +21,7 @@ local HttpMethods = require("./Game/HttpService/Methods")(Roblox, Network)
 local HttpProperties = require("./Game/HttpService/Properties")(Roblox)
 
 local RunMethods = require("./Game/RunService/Methods")(Roblox)
-local RunProperties = require("./Game/RunService/Properties")(Roblox, Registry)
+local RunProperties = require("./Game/RunService/Properties")(Roblox, Registry, Utility)
 
 --local UserInputMethods = require("./Game/UserInputService/Methods")(Roblox)
 local UserInputProperties = require("./Game/UserInputService/Properties")(Roblox)

@@ -106,7 +106,7 @@ function Sandbox:Run(Code, ...)
     local IsOk2, callableFn = pcall(function()
       return Luau.load(Bytecode, {
         debugName = string.format("[string \"%s\"]", chunkName),
-        environment = setmetatable(ECore, MT),
+        environment = Compiled,
         injectGlobals = false,
         codegenEnabled = true
       })
@@ -114,7 +114,7 @@ function Sandbox:Run(Code, ...)
     if not IsOk2 then
       return nil, tostring(callableFn)
     end
-    return callableFn
+    return setfenv(callableFn, Compiled)
   end)
   
   rawset(ECore, "loadfile", function(Path)
@@ -125,12 +125,12 @@ function Sandbox:Run(Code, ...)
     })
     local callableFn = Luau.load(Bytecode, {
       debugName = "[VM - LOADFILE]: " .. Count,
-      environment = setmetatable(ECore, MT),
+      environment = Compiled,
       injectGlobals = false,
       codegenEnabled = true
     })
     Count = Count + 1
-    return callableFn
+    return setfenv(callableFn, Compiled)
   end)
   
   local Bytecode = Luau.compile(Code, {

@@ -6,5 +6,5 @@ local Task = {
   spawn = task.spawn,
   wait = task.wait,
 }
-
+  
 return Task

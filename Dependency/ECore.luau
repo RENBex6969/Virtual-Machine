@@ -183,21 +183,22 @@ return (function(MainDirectory)
       setfenv(Compiled, ENV)
       return Compiled
     end,
-    newcclosure = function(Function)
+    newcclosure = function(Func)
       local Compiled = coroutine.wrap(function(...)
-        local b = {coroutine.yield()}
+        local Unpacked = {coroutine.yield()}
         while true do
-          b = {coroutine.yield(Function(table.unpack(b)))}
+          Unpacked = {coroutine.yield(Func(table.unpack(Unpacked)))}
         end
       end)
       Compiled()
-      Registry.CClosures[Compiled] = true
+      Registry.CClosures[Func] = true
       return Compiled
     end,
     newlclosure = function(Function)
-      return function(...)
+      local Compiled = function(...)
         return Function(...)
       end
+      return Compiled
     end,
     iscclosure = function(Function)
       if type(Function) ~= "function" or Function == nil then
