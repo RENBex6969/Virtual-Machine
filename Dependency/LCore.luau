@@ -29,6 +29,7 @@ local LCore = {
     return error(Message, (Stack or 0)+ 2)
   end,
   pcall = function(Func, ...)
+    local Arguments = {...}
     local Results = {pcall(Func, ...)}
     local Error = Results[2]
     if not Results[1] and type(Error) == "string" and string.find(Error, "attempt to perform arithmetic") then
@@ -115,11 +116,14 @@ local LCore = {
     return rawequal(...)
   end,
   setmetatable = function(Table, MT)
+    if MT.__call then
+      MT.__call()
+    end
     Registry.RawMetatables[Table] = MT
     return setmetatable(Table, Registry.RawMetatables[Table])
   end,
-  getmetatable = function(...)
-    return getmetatable(...)
+  getmetatable = function(Table)
+    return getmetatable(Table)
   end,
   wait = function(...)
     return Task.wait(...)

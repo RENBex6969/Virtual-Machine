@@ -73,7 +73,7 @@ function Sandbox:Create()
         return ECore
       end
       
-      print("Missing", Key)
+      --print("Missing", Key)
       return nil
     end,
     __newindex = function(_, Key, Value)
@@ -119,7 +119,7 @@ function Sandbox:Run(Code, ...)
     local IsOk2, callableFn = pcall(function()
       return Luau.load(Bytecode, {
         debugName = string.format(chunkName),
-        environment = setmetatable(table.unpack({Sandbox:Create()})),
+        environment = setmetatable(table.unpack({require("./Sandbox"):Create()})),
         injectGlobals = false,
       })
     end)
@@ -138,7 +138,7 @@ function Sandbox:Run(Code, ...)
     })
     local callableFn = Luau.load(Bytecode, {
       debugName = "[VM - LOADFILE]: " .. Count,
-      environment = setmetatable(table.unpack({Sandbox:Create()})),
+      environment = setmetatable(table.unpack({require("./Sandbox"):Create()})),
       injectGlobals = false,
     })
     Count = Count + 1

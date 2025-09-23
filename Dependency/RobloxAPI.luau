@@ -299,7 +299,6 @@ return (function(Roblox, CachedInstances, Registry, Game)
   local function NewInstance(ClassName, ...)
     local Obj = Roblox.Instance.new(ClassName, ...)
     CachedInstances[Obj] = "valid"
-
     if InstanceProxies[ClassName] then
       return InstanceProxies[ClassName](Obj)
     end
@@ -330,34 +329,20 @@ return (function(Roblox, CachedInstances, Registry, Game)
     return Obj
   end
 
-  local Libraries = {
-    Axes = Roblox.Axes,
-    BrickColor = Roblox.BrickColor,
-    CFrame = Roblox.CFrame,
-    Color3 = Roblox.Color3,
-    ColorSequence = Roblox.ColorSequence,
-    ColorSequenceKeypoint = Roblox.ColorSequenceKeypoint,
-    Content = Roblox.Content,
-    Faces = Roblox.Faces,
-    Font = Roblox.Font,
-    NumberRange = Roblox.NumberRange,
-    NumberSequence = Roblox.NumberSequence,
-    NumberSequenceKeypoint = Roblox.NumberSequenceKeypoint,
-    PhysicalProperties = Roblox.PhysicalProperties,
-    Ray = Roblox.Ray,
-    Rect = Roblox.Rect,
-    Region3 = Roblox.Region3,
-    Region3int16 = Roblox.Region3int16,
-    UDim = Roblox.UDim,
-    UDim2 = Roblox.UDim2,
-    Vector2 = Roblox.Vector2,
-    Vector2int16 = Roblox.Vector2int16,
-    Vector3 = Roblox.Vector3,
-    Vector3int16 = Roblox.Vector3int16,
-    Instance = { new = NewInstance },
-    Enum = Roblox.Enum
+  local Libraries = {}
+  for Index, Value in pairs(Roblox) do
+    if type(Value) == "table" then
+      Libraries[Index] = Value
+    end
+  end
+  
+  Libraries.Instance = {}
+  Libraries.Instance = {
+    new = NewInstance
   }
-
+  
+  Libraries.Enum = Roblox.Enum
+  
   Roblox.implementProperty("TextButton", "MouseButton1Click", General.MouseButton1Click, function() end)
   Roblox.implementProperty("ImageButton", "MouseButton1Click", General.MouseButton1Click, function() end)
 

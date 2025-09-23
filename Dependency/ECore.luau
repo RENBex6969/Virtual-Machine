@@ -593,18 +593,22 @@ return (function(MainDirectory)
     end,
     getfenv = function(Args)
       if type(Args) == "number" then
-        getfenv(2 + (Args or 0))
+        return getfenv(2 + (Args or 0))
       end
+      local ECore, MT = require("../Sandbox"):Create()
       return setmetatable({
         script = "Script"
       }, {
-        __index = ENV
+        __index = setmetatable(ECore, MT)
       })
     end,
     setfenv = function(Arg, Environment)
       if type(Arg) == "number" then
         setfenv(2 + tonumber(Arg or 0), Environment)
       elseif type(Arg) == "function" then
+        if ENV.iscclosure(Arg) == true then
+          error("cannot inspect c")
+        end
         setfenv(Arg, Environment)
       end
     end,
