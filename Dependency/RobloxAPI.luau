@@ -1,6 +1,7 @@
 return (function(Roblox, CachedInstances, Registry, Game)
   local Task = require("@lune/task")
   local Signal = require("./ExploitLibrary/Signal")
+  local Spy = require("../Spy")
   Registry.CallbackStorage = {}
   local CallbackStorage = Registry.CallbackStorage
 
@@ -325,11 +326,13 @@ return (function(Roblox, CachedInstances, Registry, Game)
         Task.wait(0.1)
       end
     end)
-
-    return Obj
+    
+    print("local " .. Spy:getVarName(Obj) .. " = Instance.new('" .. tostring(ClassName) .. "')")
+    return Spy:Instance(Obj)
   end
 
   local Libraries = {}
+  
   for Index, Value in pairs(Roblox) do
     if type(Value) == "table" then
       Libraries[Index] = Value

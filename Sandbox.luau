@@ -1,6 +1,7 @@
 local Utility = require("./Dependency/Utility")
 local Core = require("./Dependency/Core")
 local Task = require("@lune/task")
+local Spy = require("./Spy")
 
 local getModule = Utility.getModule
 
@@ -28,6 +29,8 @@ function Sandbox:Create()
   
   isMade = true
   RobloxAPI.game = Game
+  
+  RobloxAPI.game:GetService("Players")
   
   ECore.checkcaller = function()
     local Source = debug.info(1, 's')
