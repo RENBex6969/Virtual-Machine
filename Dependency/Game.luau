@@ -1,6 +1,6 @@
 local Roblox = require("@lune/roblox")
 local FileSystem = require("@lune/fs")
-
+local Signal = require("./ExploitLibrary/Signal")
 local Utility = require("./Utility")
 
 local Registry = Utility.getModule("Registry")
@@ -9,7 +9,7 @@ local Network = Utility.getELibrary("Network")
 local Game = Roblox.Instance.new("DataModel")
 Game.PlaceId = 0
 Registry.Roblox = Roblox
-Registry.ConnectionsMap = {} -- stores connection tables per RBXScriptSignal
+Registry.ConnectionsMap = {}
 
 --local GameFile = FileSystem.readFile("file.rbxl")
 --local Game = Roblox.deserializePlace(GameFile)

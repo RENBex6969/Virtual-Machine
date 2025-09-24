@@ -28,9 +28,30 @@ function Sandbox:Create()
   local GameShortcuts = getModule("GameShortcuts")(Game)
   
   isMade = true
-  RobloxAPI.game = Game
   
-  RobloxAPI.game:GetService("Players")
+  RobloxAPI.game = ECore.setrawmetatable({}, {
+    __index = function(_, Key)
+      local Value = Game[Key]
+      if type(Value) == "function" then
+        return function(Self, ...)
+          Registry.currentNamecall = Key
+          local mt = getmetatable(Self)
+          return mt.__namecall(Self, ...)
+        end
+      end
+      return Value
+    end,
+    __namecall = function(Self, ...)
+      if Registry.currentNamecall then
+        local Method = Registry.currentNamecall
+        Registry.currentNamecall = nil
+        return Game[Method](Game, ...)
+      end
+    end,
+  })
+
+  
+  
   
   ECore.checkcaller = function()
     local Source = debug.info(1, 's')

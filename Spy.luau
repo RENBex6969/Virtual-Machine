@@ -15,17 +15,34 @@ function Spy:getVarName(instance)
   return objectNames[instance]
 end
 
-function Spy:Table(Table, PassedKey)
+function Spy:FixArgs(Args)
+  for i, Value in ipairs(Args) do
+    if type(Value) == "function" then
+      Args[i] = "function() --[[ FUNCTION EXPLORER ]] end"
+    else
+      Args[i] = tostring(Value)
+    end
+  end
+  return Args
+end
+
+function Spy:Table(Table, PassedKey, VarName)
+  local VarName = VarName or "_"
+  
   return setmetatable({}, {
     __index = function(_, Key)
       local Value = Table[Key]
       if type(Value) == "function" then
         return function(_, ...)
           local Args = {...}
-          if #Args > 1 then
-            print("Over arguments")
+          Args = Spy:FixArgs(Args)
+          
+          if PassedKey == "MouseButton1Click" then
+            print(VarName .. "." .. PassedKey .. ":" .. Key .. "(" .. table.concat(Args, ", ") .. ")")
+            return Value(Table, ...)
           end
-          print("local _ = " .. PassedKey .. ":" .. Key .. "(function() end)")
+          
+          print("local _ = " .. PassedKey .. ":" .. Key .. "(" .. table.concat(Args, ", ") .. ")")
           return Value(Table, ...)
         end
       end
@@ -34,7 +51,7 @@ function Spy:Table(Table, PassedKey)
         return Spy:Table(Value, Key)
       end
       
-      
+      return Value
     end
   })
 end
@@ -45,17 +62,18 @@ function Spy:Instance(Instance)
   local Proxy = setmetatable({}, {
     __index = function(_, Key)
       local Value = Instance[Key]
-
       if type(Value) == "function" then
         return function(_, ...)
           local Args = {...}
-          print("local _ = " .. VarName .. ":" .. Key .. "(" .. table.concat(Args, ", ") .. ")")
+          Args = Spy:FixArgs(Args)
+          
+          print(VarName .. ":" .. Key .. "(" .. table.concat(Args, ", ") .. ")")
           return Value(Instance, ...)
         end
       end
       
       if type(Value) == "table" then
-        return Spy:Table(Value, Key)
+        return Spy:Table(Value, Key, VarName)
       end
 
       return Value

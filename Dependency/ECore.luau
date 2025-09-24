@@ -321,19 +321,25 @@ return (function(MainDirectory)
     end,
     setrawmetatable = function(Table, Metatable)
       local MT = Registry.RawMetatables[Table]
-      if MT then
-        local OldMetatable
-        if MT.__metatable then
-          OldMetatable = MT.__metatable
-          MT.__metatable = nil
-        end
-        setmetatable(Table, Metatable)
-        if MT.__metatable then
-          MT.__metatable = OldMetatable
-        end
-        return Table
+      if not MT then
+        Registry.RawMetatables[Table] = Metatable
+        return setmetatable(Table, Registry.RawMetatables[Table])
       end
-      return nil
+    
+      local OldMetatable
+      if MT.__metatable then
+        OldMetatable = MT.__metatable
+        MT.__metatable = nil
+      end
+      
+      Registry.RawMetatables[Table] = Metatable
+      local Compiled = setmetatable(Table, Registry.RawMetatables[Table])
+      
+      if OldMetatable then
+        MT.__metatable = OldMetatable
+      end
+      
+      return Compiled
     end,
     hookmetamethod = function(Table, Index, New)
       local MT = Registry.RawMetatables[Table]
@@ -415,15 +421,15 @@ return (function(MainDirectory)
       end
     end,
     getnamecallmethod = function()
-      local Traceback = debug.traceback("", 2)
       local funcs = {}
+      local Traceback = debug.traceback("", i)
       for line in Traceback:gmatch("[^\n]+") do
         local name = line:match("function%s+([%w_]+)")
         if name then
           table.insert(funcs, name)
         end
       end
-      return funcs[1]
+      return Registry.currentNamecall or funcs[1]
     end,
     setnamecallmethod = function(Method)
       Registry.currentNamecall = tostring(Method)

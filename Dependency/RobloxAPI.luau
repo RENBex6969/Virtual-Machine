@@ -327,8 +327,8 @@ return (function(Roblox, CachedInstances, Registry, Game)
       end
     end)
     
-    print("local " .. Spy:getVarName(Obj) .. " = Instance.new('" .. tostring(ClassName) .. "')")
-    return Spy:Instance(Obj)
+    --print("local " .. Spy:getVarName(Obj) .. " = Instance.new('" .. tostring(ClassName) .. "')")
+    return Obj --Spy:Instance(Obj)
   end
 
   local Libraries = {}
