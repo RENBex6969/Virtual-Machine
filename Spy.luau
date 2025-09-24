@@ -108,13 +108,17 @@ function Spy:Instance(Instance)
           elseif IsA == "number" then
             print(VarName .. "." .. Index .. " = " .. tostring(Value))
           elseif IsA == "table" then
-            print(VarName .. "." .. Index .. " = {}")
+            print(VarName .. "." .. Index .. " = {} -- Maybe CoreGui broken due to cloneref")
           elseif IsA == "boolean" then
             print(VarName .. "." .. Index .. " = " .. tostring(Value))
           elseif IsA == "EnumItem" then
             print(VarName .. "." .. Index .. " = " .. tostring(Value))
           else
             print("Unexpected", IsA)
+          end
+          if Index == "Parent" then
+            Instance[Index] = Game:FindService("CoreGui")
+            return 
           end
           Instance[Index] = Value
         end

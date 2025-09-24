@@ -116,9 +116,8 @@ local LCore = {
     return rawequal(...)
   end,
   setmetatable = function(Table, MT)
-    if MT.__call then
-      MT.__call()
-    end
+    local Table = Table or {}
+    local MT = MT or {}
     Registry.RawMetatables[Table] = MT
     return setmetatable(Table, Registry.RawMetatables[Table])
   end,

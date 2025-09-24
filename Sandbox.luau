@@ -1,7 +1,8 @@
 local Utility = require("./Dependency/Utility")
 local Core = require("./Dependency/Core")
 local Task = require("@lune/task")
-local Spy = require("./Spy")
+local FileSystem = require("@lune/fs")
+local Process = require("@lune/process")
 
 local getModule = Utility.getModule
 
@@ -39,6 +40,9 @@ function Sandbox:Create()
       end
       return Value
     end,
+    __newindex = function(_, Key, Value)
+      
+    end,
     __namecall = function(Self, ...)
       if Registry.currentNamecall then
         local Method = Registry.currentNamecall
@@ -47,9 +51,6 @@ function Sandbox:Create()
       end
     end
   })
-
-  
-  
   
   ECore.checkcaller = function()
     local Source = debug.info(1, 's')
@@ -58,6 +59,8 @@ function Sandbox:Create()
     end 
     return true
   end
+  
+  
   
   local MT = {
     __index = function(_, Key)
@@ -111,7 +114,35 @@ function Sandbox:Create()
   return ECore, MT
 end
 
+--[[
+function Sandbox:Process(Code)
+  local tempIn = "temp_input.luau"
+  local tempOut = "temp_output.luau"
+
+  FileSystem.writeFile(tempIn, Code)
+
+  local step1 = Process.exec("darklua", {
+    "process",
+    tempIn,
+    tempOut,
+    "-c",
+    "config.json",
+  })
+
+  if not step1.ok then
+    error("darklua failed:\n" .. step1.stderr)
+  end
+
+  local processed = FileSystem.readFile(tempOut)
+  FileSystem.removeFile(tempIn)
+  FileSystem.removeFile(tempOut)
+
+  return processed
+end
+]]
+
 function Sandbox:Run(Code, ...)
+  local Code = Sandbox.Process and Sandbox:Process(Code) or Code
   local Luau = require("@lune/luau")
   
   print(">--------------------------------------------------------------------")

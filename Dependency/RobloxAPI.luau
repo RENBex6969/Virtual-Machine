@@ -297,8 +297,11 @@ return (function(Roblox, CachedInstances, Registry, Game)
     return setmetatable({}, Proxy)
   end
 
-  local function NewInstance(ClassName, ...)
-    local Obj = Roblox.Instance.new(ClassName, ...)
+  local function NewInstance(ClassName, Parent)
+    local Obj = Roblox.Instance.new(ClassName)
+    if Parent then
+      Obj.Parent = Parent
+    end
     CachedInstances[Obj] = "valid"
     if InstanceProxies[ClassName] then
       return InstanceProxies[ClassName](Obj)
@@ -326,8 +329,14 @@ return (function(Roblox, CachedInstances, Registry, Game)
         Task.wait(0.1)
       end
     end)
+    --[[
+    if Parent then
+      print("local " .. Spy:getVarName(Obj) .. " = Instance.new('" .. tostring(ClassName) .. "', " .. tostring(Parent) .. ")")
+    else
+      print("local " .. Spy:getVarName(Obj) .. " = Instance.new('" .. tostring(ClassName) .. "')")
+    end
+    ]]
     
-    --print("local " .. Spy:getVarName(Obj) .. " = Instance.new('" .. tostring(ClassName) .. "')")
     return Obj --Spy:Instance(Obj)
   end
 

@@ -281,15 +281,16 @@ return (function(MainDirectory)
         __tostring = function()
           return Object.Name
         end,
-        __index = function(_, Key)
-          local MT = getmetatable(Object)[Key]
-          if type(Obj) == 'function' then
-            return function(...)
-              return Obj(Object, ...)
+        __index = function(Self, Key)
+          local Value = Object[Key]
+          if type(Value) == 'function' then
+            return function(_, ...)
+              local Args = (...) or nil
+              return Value(Object, Args)
             end
-          else
-            return MT
           end
+          
+          return Value
         end,
         __newindex = function(_, key, value)
           Object[key] = value
@@ -304,7 +305,25 @@ return (function(MainDirectory)
       return Clone
     end,
     setreadonly = function(Table, Status)
-      
+      -- Makes this work for game but for local tables no
+      if Table == Game then
+        local MT = ECore.getrawmetatable(Game)
+        if Status == false then
+          MT.__newindex = nil
+          ECore.setrawmetatable(Game, MT)
+          return
+        else
+          MT.__newindex = function() end
+          ECore.setrawmetatable(Game, MT)
+          return
+        end
+      end
+        
+      if Status == true then
+        return table.freeze(Table)
+      else
+        return Utility:Copy(Table)
+      end
     end,
     isreadonly = function(Table)
       if type(Table) == "table" then

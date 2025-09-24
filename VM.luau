@@ -1,5 +1,8 @@
 local VM = require("./Sandbox")
+
 VM:Run([=[
+
+
 --[[
 	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
 ]]
@@ -66,7 +69,6 @@ print("✅ - Pass, ⛔ - Fail, ⏺️ - No test, ⚠️ - Missing aliases\n")
 
 
 	
-
 -- Cache
 
 test("cache.invalidate", {}, function()
@@ -869,6 +871,7 @@ repeat task.wait() until running == 0
 	print("⛔ " .. fails .. " tests failed")
 	print("⚠️ " .. undefined .. " globals are missing aliases")
 
+
+
 ]=])
 	
-

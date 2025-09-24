@@ -81,12 +81,19 @@ return (function(Roblox, LocalPlayer)
   Animate.Name = "Animate"
   Animate.Parent = Character
   Animate.Source = "gsgsg"
-  
 
   -- Assign the character to the LocalPlayer
   LocalPlayer.Character = Character
   
   Roblox.implementMethod("Model", "WaitForChild", function(Self, Class)
     return Character[Class]
+  end)
+  
+  Roblox.implementMethod("Model", "BreakJoints", function(Self)
+    for _, child in ipairs(Self:GetChildren()) do
+      if child:IsA("BasePart") then
+        child.Anchored = false
+      end
+    end
   end)
 end)
