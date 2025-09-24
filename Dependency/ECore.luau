@@ -382,7 +382,8 @@ return (function(MainDirectory)
       return setmetatable({
         script = Path
       }, {__index = {
-        OnRunning = function() end
+        OnRunning = function() end,
+        onRunning = function() end
       }})
     end,
     getscripthash = function(script)

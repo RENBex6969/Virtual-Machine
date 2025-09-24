@@ -17,6 +17,7 @@ function Sandbox:Create()
   local ECore = getModule("ECore")(MainDirectory)
   local Libraries = require("./Dependency/LuauLibrary/CompiledLibrary")(ECore)
   local FinalECore = getModule("FinalECore")(ECore, LCore, Game, Registry)
+  local GameShortcuts = getModule("GameShortcuts")(Game)
   local RobloxAPI = {}
   if isMade == false then
     RobloxAPI = getModule("RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
@@ -24,9 +25,6 @@ function Sandbox:Create()
   else
     RobloxAPI = CacheRobloxAPI
   end
-  
-  local GameShortcuts = getModule("GameShortcuts")(Game)
-  
   isMade = true
   
   RobloxAPI.game = ECore.setrawmetatable({}, {
@@ -47,7 +45,7 @@ function Sandbox:Create()
         Registry.currentNamecall = nil
         return Game[Method](Game, ...)
       end
-    end,
+    end
   })
 
   

@@ -67,6 +67,9 @@ return (function(ECore, LCore, Game, Registry)
         table.insert(Compiled, Obj) 
       end 
     end
+    table.insert(Compiled, {
+      Name = "ClassicCamera"
+    })
     return Compiled
   end
   
@@ -96,6 +99,9 @@ return (function(ECore, LCore, Game, Registry)
         table.insert(Compiled, Obj) 
       end 
     end
+    table.insert(Compiled, {
+      Name = "Invisicam"
+    })
     return Compiled
   end
 end)
