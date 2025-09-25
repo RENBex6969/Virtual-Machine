@@ -25,7 +25,7 @@ local RunMethods = require("./Game/RunService/Methods")(Roblox)
 local RunProperties = require("./Game/RunService/Properties")(Roblox, Registry, Utility)
 
 --local UserInputMethods = require("./Game/UserInputService/Methods")(Roblox)
-local UserInputProperties = require("./Game/UserInputService/Properties")(Roblox)
+local UserInputProperties = require("./Game/UserInputService/Properties")(Roblox, Game)
 
 local LightningProperties = require("./Game/LightningService/Properties")(Roblox)
 local LightningMethods = require("./Game/LightningService/Methods")(Roblox)
@@ -64,6 +64,9 @@ local TextMethods = require("./Game/TextService/Methods")(Roblox)
 
 local CoreGuiProperties = require("./Game/CoreGui/Properties")(Roblox, Game)
 local CoreGuiMethods = require("./Game/CoreGui/Methods")(Roblox, Game)
+
+local WorkspaceProperties = require("./Game/Workspace/Properties")(Roblox, Game)
+local WorkspaceMethods = require("./Game/Workspace/Methods")(Roblox)
 
 
 local Instance = Roblox.Instance

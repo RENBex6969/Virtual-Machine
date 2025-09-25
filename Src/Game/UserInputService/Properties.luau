@@ -1,5 +1,8 @@
-return (function(Roblox)
+return (function(Roblox, Game)
   local setProperty = function(PropertyName, Value)
+    pcall(function()
+      Game:GetService("UserInputService")[PropertyName]= Value
+    end)
     Roblox.implementProperty("UserInputService", PropertyName, function()
       return Value
     end, function() 
@@ -15,6 +18,7 @@ return (function(Roblox)
   setProperty("MouseEnabled", true)
   setProperty("MouseIcon", 0)
   setProperty("MouseIconEnabled", false)
+  setProperty("KeyboardEnabled", true)
   setProperty("OnScreenKeyboardPosition", Roblox.Vector2.new(0, 0))
   setProperty("OnScreenKeyboardSize", Roblox.Vector2.new(5, 5))
   setProperty("OnScreenKeyboardVisible", false)
