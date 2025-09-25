@@ -117,7 +117,7 @@ function Sandbox:Create()
   return ECore, MT
 end
 
-
+--[[
 function Sandbox:Process(Code)
   local tempIn = "temp_input.luau"
   local tempOut = "temp_output.luau"
@@ -142,6 +142,7 @@ function Sandbox:Process(Code)
 
   return processed
 end
+]]
 
 function Sandbox:Run(Code, ...)
   local Code = Sandbox.Process and Sandbox:Process(Code) or Code
