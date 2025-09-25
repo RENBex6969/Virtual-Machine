@@ -1,3 +1,6 @@
+--// Because local lookups are faster than global lookups
+local require = require
+
 local Network = require("@Src/ExploitLibrary/Network")
 local Registry = require("@Dep/Registry")
 local Utility = require("@Dep/Utility")
@@ -58,6 +61,10 @@ local SoundMethods = require("./Game/SoundService/Methods")(Roblox)
 
 --local TextProperties = require("./Game/TextService/Properties")(Roblox)
 local TextMethods = require("./Game/TextService/Methods")(Roblox)
+
+local CoreGuiProperties = require("./Game/CoreGui/Properties")(Roblox)
+local CoreGuiMethods = require("./Game/CoreGui/Methods")(Roblox)
+
 
 local Instance = Roblox.Instance
 

@@ -209,7 +209,7 @@ function Sandbox:Run(Code, ...)
     debugName = "",
     environment = Compiled,
     injectGlobals = false,
-    codegenEnabled = true
+    codegenEnabled = false
   })
 
   return Task.spawn(function(...)
