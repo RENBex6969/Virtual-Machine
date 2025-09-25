@@ -1,4 +1,4 @@
-return (function(Roblox)
+return (function(Roblox, Game)
   local setProperty = function(PropertyName, Value)
     Roblox.implementProperty("CoreGui", PropertyName, function()
       return Value
@@ -7,6 +7,6 @@ return (function(Roblox)
     end)
   end
 
-  setProperty("Version", 0)
-  setProperty("SelectionImageObject", false)
+  Game:GetService("CoreGui").Version = 0
+  setProperty("SelectionImageObject", function() end)
 end)

@@ -62,8 +62,8 @@ local SoundMethods = require("./Game/SoundService/Methods")(Roblox)
 --local TextProperties = require("./Game/TextService/Properties")(Roblox)
 local TextMethods = require("./Game/TextService/Methods")(Roblox)
 
-local CoreGuiProperties = require("./Game/CoreGui/Properties")(Roblox)
-local CoreGuiMethods = require("./Game/CoreGui/Methods")(Roblox)
+local CoreGuiProperties = require("./Game/CoreGui/Properties")(Roblox, Game)
+local CoreGuiMethods = require("./Game/CoreGui/Methods")(Roblox, Game)
 
 
 local Instance = Roblox.Instance

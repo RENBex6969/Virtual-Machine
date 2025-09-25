@@ -66,6 +66,7 @@ Making the sandbox more modular for better implementation of features
 1. CorePackages - Partial
 2. Lightning - Full
 3. Game - Partial
+4. CoreGui - Full
 
 ### Suggestions
 Sumbit a issue
