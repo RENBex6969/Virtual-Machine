@@ -39,8 +39,16 @@ Partially impossible since luau does not supply the full debug library like lua
 2. **Hookfunction - Possible** : 
 Adding hookfunction support is possible but has some trade offs..
 
-3. **Setreadonly -- Possible** :
+3. **Setreadonly - Possible** :
 Setreadonly is implemented but only works for the Game datamodel for compatibility purposes. Isnt fully implemented due to tradeoffs
+
+### TODO :
+
+1. **Optimizing**
+Optimizing because the compilation of the Game environment differs for most people
+
+2. **Modular**
+Making the sandbox more modular for better implementation of features
 
 ### Roblox 
 
