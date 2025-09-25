@@ -1,10 +1,8 @@
-local Utility = require("./Dependency/Utility")
-local Core = require("./Dependency/Core")
+local Utility = require("@Dep/Utility")
+local Core = require("@Src/Core")
 local Task = require("@lune/task")
 local FileSystem = require("@lune/fs")
 local Process = require("@lune/process")
-
-local getModule = Utility.getModule
 
 local isMade = false
 local CacheRobloxAPI = {}
@@ -12,16 +10,17 @@ local CacheRobloxAPI = {}
 local Sandbox = {}
 function Sandbox:Create()
   local MainDirectory = (debug.info(1, 's')):gsub("Sandbox", "")
-  local Registry = getModule("Registry")
-  local Game = getModule("Game")
-  local LCore = getModule("LCore")
-  local ECore = getModule("ECore")(MainDirectory)
-  local Libraries = require("./Dependency/LuauLibrary/CompiledLibrary")(ECore)
-  local FinalECore = getModule("FinalECore")(ECore, LCore, Game, Registry)
-  local GameShortcuts = getModule("GameShortcuts")(Game)
+  local Registry = require("@Dep/Registry")
+  local Game = require("@Src/Game")
+  local LCore = require("@Src/LCore")
+  local ECore = require("@Src/ECore")(MainDirectory)
+  local Libraries = require("@Src/LuauLibrary/CompiledLibrary")(ECore)
+  local FinalECore = require("@Src/FinalECore")(ECore, LCore, Game, Registry)
+  local GameShortcuts = require("@Src/GameShortcuts")(Game)
   local RobloxAPI = {}
+  
   if isMade == false then
-    RobloxAPI = getModule("RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
+    RobloxAPI = require("@Src/RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
     CacheRobloxAPI = RobloxAPI
   else
     RobloxAPI = CacheRobloxAPI
@@ -35,7 +34,10 @@ function Sandbox:Create()
         return function(Self, ...)
           Registry.currentNamecall = Key
           local mt = getmetatable(Self)
-          return mt.__namecall(Self, ...)
+          if mt and mt.__namecall then
+            mt.__namecall(Self, ...)
+          end
+          return Value(Game, ...)
         end
       end
       return Value
@@ -49,7 +51,8 @@ function Sandbox:Create()
         Registry.currentNamecall = nil
         return Game[Method](Game, ...)
       end
-    end
+    end,
+    __metatable = "Locked"
   })
   
   ECore.checkcaller = function()
@@ -114,7 +117,7 @@ function Sandbox:Create()
   return ECore, MT
 end
 
---[[
+
 function Sandbox:Process(Code)
   local tempIn = "temp_input.luau"
   local tempOut = "temp_output.luau"
@@ -139,7 +142,6 @@ function Sandbox:Process(Code)
 
   return processed
 end
-]]
 
 function Sandbox:Run(Code, ...)
   local Code = Sandbox.Process and Sandbox:Process(Code) or Code

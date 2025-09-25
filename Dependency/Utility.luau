@@ -5,11 +5,11 @@ Utility.getModule = function(Module)
 end
 
 Utility.getLLibrary = function(Library)
-  return require("./LuauLibrary/" .. Library)
+  return require("@Src/LuauLibrary/" .. Library)
 end
 
 Utility.getELibrary = function(Library)
-  return require("./ExploitLibrary/" .. Library)
+  return require("@Src/ExploitLibrary/" .. Library)
 end
 
 Utility.DeepMerge = function(...)

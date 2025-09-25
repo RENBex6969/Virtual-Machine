@@ -1,0 +1,7 @@
+{
+  "aliases": {
+    "Dep": "./Dependency",
+    "Src": "./Src",
+    "ELibrary": "./Src/ExploitLibrary"
+  }
+}
