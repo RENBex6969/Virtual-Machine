@@ -36,8 +36,11 @@ Running the latest sUNC test is impossible due to software incompatibility and a
 1. **Debug Library - Non** :
 Partially impossible since luau does not supply the full debug library like lua
 
-2. **Hookfunction - Partial** : 
-Impossible since hookfunction is a low level function that isnt possible to recreate in luau
+2. **Hookfunction - Possible** : 
+Adding hookfunction support is possible but has some trade offs..
+
+3. **Setreadonly -- Possible** :
+Setreadonly is implemented but only works for the Game datamodel for compatibility purposes. Isnt fully implemented due to tradeoffs
 
 ### Roblox 
 
