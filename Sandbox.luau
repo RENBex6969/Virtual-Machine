@@ -63,8 +63,6 @@ function Sandbox:Create()
     return true
   end
   
-  
-  
   local MT = {
     __index = function(_, Key)
       local Source = debug.info(coroutine.running(), 2, "s")
@@ -204,7 +202,7 @@ function Sandbox:Run(Code, ...)
   local Bytecode = Luau.compile(Code, {
     optimizationLevel = 2,
     coverageLevel = 0,
-    debugLevel = 1
+    debugLevel = 0,
   })
 
   local CompiledFN = Luau.load(Bytecode, {

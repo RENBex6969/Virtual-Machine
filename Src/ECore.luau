@@ -629,8 +629,15 @@ return (function(MainDirectory)
   }
   
   local Debug = getLibrary("Debug")(ENV)
-  ENV.debug = Debug
-  
+  ENV.debug = setmetatable({}, {
+    __index = function(_, Key)
+      return function(...)
+        local args = {...}
+        print(args)
+        return Debug[Key](...)
+      end
+    end
+  })
   table.foreach(FileSystem, function(Index, Value)
     ENV[Index] = Value
   end)

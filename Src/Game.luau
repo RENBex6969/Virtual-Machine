@@ -1,9 +1,9 @@
 local Signal = require("@Src/ExploitLibrary/Signal")
+local Network = require("@Src/ExploitLibrary/Network")
 local Registry = require("@Dep/Registry")
 local Utility = require("@Dep/Utility")
 local Roblox = require("@lune/roblox")
 local FileSystem = require("@lune/fs")
-local Network = Utility.getELibrary("Network")
 
 local Game = Roblox.Instance.new("DataModel")
 Game.PlaceId = 0
@@ -60,8 +60,6 @@ local SoundMethods = require("./Game/SoundService/Methods")(Roblox)
 --local TextProperties = require("./Game/TextService/Properties")(Roblox)
 local TextMethods = require("./Game/TextService/Methods")(Roblox)
 
-
-
 local Instance = Roblox.Instance
 
 for i = 1, 50 do
@@ -96,7 +94,6 @@ Constants.Source = [[
     "Virtualization"
   }
 ]]
-
 
 Registry.Game = Game
 

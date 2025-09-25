@@ -1,5 +1,10 @@
 local Utility = {}
 
+local next = next
+local type = type
+local select = select
+local require = require
+
 Utility.getModule = function(Module)
   return require("./" .. Module)
 end
@@ -12,36 +17,53 @@ Utility.getELibrary = function(Library)
   return require("@Src/ExploitLibrary/" .. Library)
 end
 
-Utility.DeepMerge = function(...)
-  local Compiled = {}
-  local function deepMerge(Target, Source)
-    table.foreach(Source, function(Key, Value)
-      if type(Value) == "table" and type(Target[Key]) == "table" then
-        deepMerge(Target[Key], Value)
+local function DeepMerge(Target, Source, maxIndex)
+  local maxIndex = maxIndex or 0
+  for Key, Value in next, Source do
+    if type(Key) == "number" then
+      maxIndex += 1
+      Target[maxIndex] = Value
+    elseif type(Value) == "table" then
+      local TargetValue = Target[Key]
+      if TargetValue ~= nil and type(TargetValue) == "table" then
+        DeepMerge(TargetValue, Value)
       else
         Target[Key] = Value
       end
-    end)
+    else
+      Target[Key] = Value
+    end
   end
-  table.foreach({...}, function(_, Table)
-    deepMerge(Compiled, Table)
-  end)
+  return Target, maxIndex
+end
+
+local function DeepClone(Table)
+  local Compiled = {}
+  for Index, Value in next, Table do
+    if type(Value) == "table" then
+      Compiled[Index] = DeepClone(Value)
+    else
+      Compiled[Index] = Value
+    end
+  end
   return Compiled
 end
 
-Utility.Copy = function(Table)
-  local function deepCopy(Original)
-    local copy = {}
-    table.foreach(Original, function(Key, Value)
-      if type(Value) == "table" then
-        copy[Key] = deepCopy(Value)
-      else
-        copy[Key] = Value
-      end
-    end)
-    return copy
+function Utility:DeepClone(Table)
+  return DeepClone(Table)
+end
+
+function Utility:DeepMerge(...)
+  local Compiled = {}
+  local Count = select("#", ...)
+  local maxIndex = 0
+  for Index = 1, Count do
+    local Table = select(Index, ...)
+    if type(Table) == "table" then
+      Compiled, maxIndex = DeepMerge(Compiled, Table, maxIndex)
+    end
   end
-  return deepCopy(Table)
+  return Compiled
 end
 
 return Utility

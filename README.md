@@ -12,7 +12,7 @@ The VM has bulit in API system you can use it on your scripts!
 
 **Requiring the VM** :
 ```luau
-local Sandbox = require("./Sandbox") -- Adjust thr path to the path of Sandbox
+local Sandbox = require("./Sandbox") -- Adjust the path to the path of Sandbox
 ```
 
 **Example Script** :
@@ -27,6 +27,8 @@ Sandbox:Run([[
 ```
 
 ### UNC / Unified Naming Convention
+Running the latest sUNC test is impossible due to software incompatibility and as the script communicates with the testing place
+
 1. Has an **89 / 91 %** score on the UNC test
 2. Has an **80 / 83%** score on the sUNC test (Public August 2024 Version)
 
@@ -35,7 +37,7 @@ Sandbox:Run([[
 Partially impossible since luau does not supply the full debug library like lua
 
 2. **Hookfunction - Partial** : 
-Impossinle since hookfunction is a low level function that isnt possible to recreate in luau
+Impossible since hookfunction is a low level function that isnt possible to recreate in luau
 
 ### Roblox 
 
