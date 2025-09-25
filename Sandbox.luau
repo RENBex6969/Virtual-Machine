@@ -196,7 +196,6 @@ function Sandbox:Run(Code, ...)
       })
     end)
     if not IsOk or IsOk == nil then
-      print(1)
       return nil, tostring(Bytecode)
     end
     
@@ -209,11 +208,9 @@ function Sandbox:Run(Code, ...)
     end)
     
     if not IsOk2 or IsOk2 == nil then
-      print(0)
       return nil, tostring(callableFn)
     end
-    print(IsOk, Bytecode)
-    print(IsOk2, callableFn)
+    
     return callableFn
   end)
   
