@@ -276,33 +276,6 @@ return (function(MainDirectory)
       table.insert(Registry.clonerefs[Object], Clone)
       return Clone
     end,
-    setreadonly = function(Table, Status)
-      -- Makes this work for game but for local tables no
-      if Table == Game then
-        local MT = ECore.getrawmetatable(Game)
-        if Status == false then
-          MT.__newindex = nil
-          ECore.setrawmetatable(Game, MT)
-          return
-        else
-          MT.__newindex = function() end
-          ECore.setrawmetatable(Game, MT)
-          return
-        end
-      end
-        
-      if Status == true then
-        return table.freeze(Table)
-      else
-        return Utility:Copy(Table)
-      end
-    end,
-    isreadonly = function(Table)
-      if type(Table) == "table" then
-        return table.isfrozen(Table)
-      end
-      return false
-    end,
     getrawmetatable = function(Table)
       if Registry.RawMetatables[Table] then
         return Registry.RawMetatables[Table]
@@ -316,7 +289,6 @@ return (function(MainDirectory)
         Registry.RawMetatables[Table] = Metatable
         return setmetatable(Table, Registry.RawMetatables[Table])
       end
-    
       local OldMetatable
       if MT.__metatable then
         OldMetatable = MT.__metatable
@@ -331,6 +303,64 @@ return (function(MainDirectory)
       end
       
       return Compiled
+    end,
+    setreadonly = function(Table, Status)
+      if Table == Game then
+        local MT = ENV.getrawmetatable(Game)
+        if Status == false then
+          MT.__newindex = nil
+          ECore.setrawmetatable(Game, MT)
+          return
+        else
+          MT.__newindex = function() end
+          ENV.setrawmetatable(Game, MT)
+          return
+        end
+      end
+      local MT = ENV.getrawmetatable(Table) or {}
+      
+      MT.__readonly = Status
+      
+      local oldNewIndex = MT.__newindex
+      MT.__newindex = function(t, k, v)
+        if MT.__readonly then
+          
+        elseif oldNewIndex then
+          return oldNewIndex(t, k, v)
+        else
+          return rawset(t, k, v)
+        end
+      end
+      
+      MT.__PAIRS__ = function(t)
+        return pairs(t)
+      end
+      
+      MT.__IPAIRS__ = function(t)
+        return ipairs(t)
+      end
+      
+      MT.__NEXT__ = function(t, k)
+        return next(t, k)
+      end
+      
+      MT.__iter = function(t)
+        return next, t, nil
+      end
+      
+      MT.__metatable = MT.__metatable or {}
+      
+      ENV.setrawmetatable(Table, MT)
+      return Table
+    end,
+    isreadonly = function(Table)
+      if type(Table) == "table" then
+        local mt = ENV.getrawmetatable(Table)
+        if mt and mt.__readonly then
+          return true
+        end
+      end
+      return false
     end,
     hookmetamethod = function(Table, Index, New)
       local MT = Registry.RawMetatables[Table]
@@ -376,6 +406,9 @@ return (function(MainDirectory)
         OnRunning = function() end,
         onRunning = function() end
       }})
+    end,
+    getscriptcontext = function(...)
+      return {}
     end,
     getscripthash = function(script)
       if not script:IsA("LocalScript") and not script:IsA("ModuleScript") and not script:IsA("Script") then
@@ -629,15 +662,7 @@ return (function(MainDirectory)
   }
   
   local Debug = getLibrary("Debug")(ENV)
-  ENV.debug = setmetatable({}, {
-    __index = function(_, Key)
-      return function(...)
-        local args = {...}
-        print(args)
-        return Debug[Key](...)
-      end
-    end
-  })
+  ENV.debug = Debug
   table.foreach(FileSystem, function(Index, Value)
     ENV[Index] = Value
   end)

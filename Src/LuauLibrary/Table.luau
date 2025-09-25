@@ -7,10 +7,37 @@ return (function(ECore)
     find = table.find,
     foreach = table.foreach,
     foreachi = table.foreachi,
-    freeze = table.freeze,
+    freeze = function(Table)
+      if type(Table) ~= "table" then 
+        return Table
+      end
+      
+      ECore.setreadonly(Table, true)
+      
+      if ECore.isreadonly(Table) == false then
+        table.freeze(Table)
+      end
+      
+      return tbl
+    end,
     getn = table.getn,
     insert = table.insert,
-    isfrozen = table.isfrozen,
+    isfrozen = function(Table)
+      if type(Table) ~= "table" then
+        return false
+      end
+      
+      local MT = ECore.getrawmetatable(Table)
+      if MT and MT.__readonly then
+        return true
+      end
+      
+      if table.isfrozen(tbl) then
+        return true
+      end
+      
+      return false
+    end,
     maxn = table.maxn,
     move = table.move,
     pack = table.pack,

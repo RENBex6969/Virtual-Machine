@@ -4,6 +4,7 @@ local Registry = {
   GlobalVariables = {},
   CClosures = {},
   LightingProperty = {},
+  CurrentThreadIdentity = 9,
   Game = {
     Name = "",
     GameId = 0,

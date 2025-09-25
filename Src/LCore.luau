@@ -75,12 +75,6 @@ local LCore = {
     end
     return Condition, Message
   end,
-  pairs = function(...)
-    return pairs(...)
-  end,
-  ipairs = function(...)
-    return ipairs(...)
-  end,
   select = function(...)
     return select(...)
   end,
@@ -94,8 +88,29 @@ local LCore = {
   unpack = function(...)
     return table.unpack(...)
   end,
-  next = function(...)
-    return next(...)
+  next = function(t, k)
+    local getrawmetatable = Registry.GlobalVariables.getrawmetatable
+    local MT = getrawmetatable(t)
+    if MT and MT.__NEXT__ then
+      return MT.__NEXT__(t, k)
+    end
+    return next(t, k)
+  end,
+  pairs = function(Table)
+    local getrawmetatable = Registry.GlobalVariables.getrawmetatable
+    local MT = getrawmetatable(Table)
+    if MT and MT.__PAIRS__ then
+      return MT.__PAIRS__(Table)
+    end
+    return pairs(Table)
+  end,
+  ipairs = function(Table)
+    local getrawmetatable = Registry.GlobalVariables.getrawmetatable
+    local MT = getrawmetatable(Table)
+    if MT and MT.__IPAIRS__ then
+      return MT.__IPAIRS__(Table)
+    end
+    return ipairs(Table)
   end,
   type = function(...)
     return type(...)

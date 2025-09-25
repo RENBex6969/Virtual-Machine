@@ -184,18 +184,36 @@ function Sandbox:Run(Code, ...)
     return callableFn
   end)
   
+  local Count2 = 0
   rawset(ECore, "loadfile", function(Path)
-    local Bytecode = Luau.compile(ECore.readfile(Path), {
-      optimizationLevel = 0,
-      coverageLevel = 0,
-      debugLevel = 0
-    })
-    local callableFn = Luau.load(Bytecode, {
-      debugName = "[VM - LOADFILE]: " .. Count,
-      environment = setmetatable(table.unpack({require("./Sandbox"):Create()})),
-      injectGlobals = false,
-    })
-    Count = Count + 1
+    chunkName = chunkName or "[VM - Loadfile]: " .. Count
+    Count2 = Count2 + 1
+    local IsOk, Bytecode = pcall(function()
+      return Luau.compile(ECore.readfile(Path), {
+        optimizationLevel = 0,
+        coverageLevel = 0,
+        debugLevel = 2
+      })
+    end)
+    if not IsOk or IsOk == nil then
+      print(1)
+      return nil, tostring(Bytecode)
+    end
+    
+    local IsOk2, callableFn = pcall(function()
+      return Luau.load(Bytecode, {
+        debugName = string.format(chunkName),
+        environment = setmetatable(table.unpack({require("./Sandbox"):Create()})),
+        injectGlobals = false,
+      })
+    end)
+    
+    if not IsOk2 or IsOk2 == nil then
+      print(0)
+      return nil, tostring(callableFn)
+    end
+    print(IsOk, Bytecode)
+    print(IsOk2, callableFn)
     return callableFn
   end)
   
