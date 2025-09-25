@@ -5,870 +5,1038 @@ VM:Run([=[
 --[[
 	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
 ]]
-local passes, fails, undefined = 0, 0, 0
-local running = 0
-
-local function getGlobal(path)
-	local value = getgenv and getgenv() or getfenv(2)
-
-	while value ~= nil and path ~= "" do
-		local name, nextValue = string.match(path, "^([^.]+)%.?(.*)$")
-		value = value[name]
-		path = nextValue
+local function fankshan()
+	local results = {["cache.invalidate"]=false,["cache.iscached"]=false,["cache.replace"]=false,cloneref=false,compareinstances=false,clonefunction=false,["crypt.generatebytes"]=false,["crypt.generatekey"]=false,getrenv=false,["crypt.decrypt"]=false,["crypt.encrypt"]=false,["crypt.hash"]=false,base64_encode=false,base64_decode=false,["debug.getconstant"]=false,["debug.getconstants"]=false,["debug.getinfo"]=false,["debug.getproto"]=false,["debug.getprotos"]=false,["debug.getstack"]=false,["debug.getupvalue"]=false,["debug.getupvalues"]=false,["debug.setconstant"]=false,["debug.setstack"]=false,getgc=false,getgenv_access=false,getloadedmodules=false,getrunningscripts=false,getscripthash=false,getscripts=false,getsenv=false,hookfunction=false,hookmetamethod=false,iscclosure=false,isexecutorclosure=false,islclosure=false,newcclosure=false,setreadonly=false,checkcaller=false,lz4compress=false,lz4decompress=false,isrbxactive=false,fireclickdetector=false,getscriptclosure=false,request=false,getcallbackvalue=false,getconnections=false,listfiles=false,writefile=false,isfolder=false,makefolder=false,appendfile=false,isfile=false,delfolder=false,delfile=false,loadfile=false,getcustomasset=false,gethui=false,gethiddenproperty=false,sethiddenproperty=false,getrawmetatable=false,isreadonly=false,getnamecallmethod=false,setscriptable=false,isscriptable=false,getinstances=false,getnilinstances=false,fireproximityprompt=false,setrawmetatable=false,getthreadidentity=false,setthreadidentity=false,getrenderproperty=false,setrenderproperty=false,["Drawing.new"]=false,["Drawing.Fonts"]=false,cleardrawcache=false,loadstring=false,["WebSocket.connect"]=false,["debug.setupvalue"]=false,readfile=false,getscriptbytecode=false};
+	local asserted = {};
+	getgenv().cachedFuncs = {};
+	pcall(function()
+		if assert then
+			if ((assert(4 < 3) == nil) or (asset(4 == 3) == "") or (assert(4 == 3) == nil)) then
+				print("⚠️⚠️ YOUR EXECUTOR USES A FAKE ASSERT FUNCTION⚠️⚠️\n       This usually means it's used to fake the original UNC test");
+				task.wait(0.9);
+			end
+		end
+	end);
+	local function checkFunctionExists(path)
+		local current = getgenv();
+		for part in string.gmatch(path, "[^.]+") do
+			current = current[part];
+			if not current then
+				return false;
+			end
+		end
+		return true;
 	end
-
-	return value
-end
-
-local function test(name, aliases, callback, target)
-	running = running + 1
-
-	task.spawn(function()
-		if not callback then
-			print("⏺️ " .. name)
-		elseif not getGlobal(name) then
-			fails = fails + 1
-			warn("⛔ " .. name)
-		else
-			local success, message = pcall(callback)
-	        name = tostring(name)
-			message = tostring(message)
-			if success then
-				passes = passes + 1
-				print("✅ " .. tostring(name) .. (tostring(message) and " • " .. tostring(message) or ""))
+	for i, v in pairs(results) do
+		if ((i ~= "Drawing.new") and (i ~= "WebSocket.connect") and (i ~= "getgenv_access") and (i ~= "Drawing.Fonts")) then
+			if not checkFunctionExists(i) then
+				asserted[i] = true;
+				cachedFuncs["❌ " .. i] = "function is nil";
+			end
+		end
+	end
+	local function AsCon(condition, testName, reason)
+		if ((testName ~= "loadstring[complicated]") and (testName ~= "loadstring[basic]") and (testName ~= "loadstring[simple]")) then
+			if (not condition or (condition == nil)) then
+				if not asserted[testName] then
+					asserted[testName] = true;
+					results[testName] = false;
+					warn("❌ " .. testName, reason);
+				end
 			else
-				fails = fails + 1
-				warn("⛔ " .. name .. " failed: " .. message)
+				if not asserted[testName] then
+					results[testName] = true;
+				end
+				return true;
 			end
-		end
-	
-		local undefinedAliases = {}
-	
-		for _, alias in ipairs(aliases) do
-			if getGlobal(alias) == nil then
-				table.insert(undefinedAliases, alias)
-			end
-		end
-	
-		if #undefinedAliases > 0 then
-			undefined = undefined + 1
-			warn("⚠️ " .. table.concat(undefinedAliases, ", "))
-		end
-
-		running = running - 1
-	end)
-end
-
--- Header and summary
-
-print("\n")
-
-print("UNC Environment Check")
-print("✅ - Pass, ⛔ - Fail, ⏺️ - No test, ⚠️ - Missing aliases\n")
-
-
-	
-
--- Cache
-
-test("cache.invalidate", {}, function()
-	local container = Instance.new("Folder")
-	local part = Instance.new("Part", container)
-	cache.invalidate(container:FindFirstChild("Part"))
-	assert(part ~= container:FindFirstChild("Part"), "Reference `part` could not be invalidated")
-end)
-
-test("cache.iscached", {}, function()
-	local part = Instance.new("Part")
-	assert(cache.iscached(part), "Part should be cached")
-	cache.invalidate(part)
-	assert(not cache.iscached(part), "Part should not be cached")
-end)
-
-test("cache.replace", {}, function()
-	local part = Instance.new("Part")
-	local fire = Instance.new("Fire")
-	cache.replace(part, fire)
-	assert(part ~= fire, "Part was not replaced with Fire")
-end)
-
-test("cloneref", {}, function()
-	local part = Instance.new("Part")
-	local clone = cloneref(part)
-	assert(part ~= clone, "Clone should not be equal to original")
-	clone.Name = "Test"
-	assert(part.Name == "Test", "Clone should have updated the original")
-end)
-
-test("compareinstances", {}, function()
-	local part = Instance.new("Part")
-	local clone = cloneref(part)
-	assert(part ~= clone, "Clone should not be equal to original")
-	assert(compareinstances(part, clone), "Clone should be equal to original when using compareinstances()")
-end)
-
--- Closures
-
-local function shallowEqual(t1, t2)
-	if t1 == t2 then
-		return true
-	end
-
-	local UNIQUE_TYPES = {
-		["function"] = true,
-		["table"] = true,
-		["userdata"] = true,
-		["thread"] = true,
-	}
-
-	for k, v in pairs(t1) do
-		if UNIQUE_TYPES[type(v)] then
-			if type(t2[k]) ~= type(v) then
-				return false
-			end
-		elseif t2[k] ~= v then
-			return false
-		end
-	end
-
-	for k, v in pairs(t2) do
-		if UNIQUE_TYPES[type(v)] then
-			if type(t2[k]) ~= type(v) then
-				return false
-			end
-		elseif t1[k] ~= v then
-			return false
-		end
-	end
-
-	return true
-end
-
-test("checkcaller", {}, function()
-	assert(checkcaller(), "Main scope should return true")
-end)
-
-test("clonefunction", {}, function()
-	local function test()
-		return "success"
-	end
-	local copy = clonefunction(test)
-	assert(test() == copy(), "The clone should return the same value as the original")
-	assert(test ~= copy, "The clone should not be equal to the original")
-end)
-
-test("getcallingscript", {})
-
-test("getscriptclosure", {"getscriptfunction"}, function()
-	local module = game:GetService("CoreGui").RobloxGui.Modules.Common.Constants
-	local constants = getrenv().require(module)
-	local generated = getscriptclosure(module)()
-	assert(constants ~= generated, "Generated module should not match the original")
-	assert(shallowEqual(constants, generated), "Generated constant table should be shallow equal to the original")
-end)
-
-test("hookfunction", {"replaceclosure"}, function()
-	local function test()
-		return true
-	end
-	local ref = hookfunction(test, function()
-		return false
-	end)
-	assert(test() == false, "Function should return false")
-	assert(ref() == true, "Original function should return true")
-	assert(test ~= ref, "Original function should not be same as the reference")
-end)
-
-test("iscclosure", {}, function()
-	assert(iscclosure(print) == true, "Function 'print' should be a C closure")
-	assert(iscclosure(function() end) == false, "Executor function should not be a C closure")
-end)
-
-test("islclosure", {}, function()
-	assert(islclosure(print) == false, "Function 'print' should not be a Lua closure")
-	assert(islclosure(function() end) == true, "Executor function should be a Lua closure")
-end)
-
-test("isexecutorclosure", {"checkclosure", "isourclosure"}, function()
-	assert(isexecutorclosure(isexecutorclosure) == true, "Did not return true for an executor global")
-	assert(isexecutorclosure(newcclosure(function() end)) == true, "Did not return true for an executor C closure")
-	assert(isexecutorclosure(function() end) == true, "Did not return true for an executor Luau closure")
-	assert(isexecutorclosure(print) == false, "Did not return false for a Roblox global")
-end)
-
-test("loadstring", {}, function()
-	local animate = game:GetService("Players").LocalPlayer.Character.Animate
-	local bytecode = getscriptbytecode(animate)
-	local func = loadstring(bytecode)
-	assert(type(func) ~= "function", "Luau bytecode should not be loadable!")
-	assert(assert(loadstring("return ... + 1"))(1) == 2, "Failed to do simple math")
-	assert(type(select(2, loadstring("f"))) == "string", "Loadstring did not return anything for a compiler error")
-end)
-
-test("newcclosure", {}, function()
-	local function test()
-		return true
-	end
-	local testC = newcclosure(test)
-	assert(test() == testC(), "New C closure should return the same value as the original")
-	assert(test ~= testC, "New C closure should not be same as the original")
-	assert(iscclosure(testC), "New C closure should be a C closure")
-end)
-
--- Console
-
-test("rconsoleclear", {"consoleclear"})
-
-test("rconsolecreate", {"consolecreate"})
-
-test("rconsoledestroy", {"consoledestroy"})
-
-test("rconsoleinput", {"consoleinput"})
-
-test("rconsoleprint", {"consoleprint"})
-
-test("rconsolesettitle", {"rconsolename", "consolesettitle"})
-
--- Crypt
-
-test("crypt.base64encode", {"crypt.base64.encode", "crypt.base64_encode", "base64.encode", "base64_encode"}, function()
-	assert(crypt.base64encode("test") == "dGVzdA==", "Base64 encoding failed")
-end)
-
-test("crypt.base64decode", {"crypt.base64.decode", "crypt.base64_decode", "base64.decode", "base64_decode"}, function()
-	assert(crypt.base64decode("dGVzdA==") == "test", "Base64 decoding failed")
-end)
-
-test("crypt.encrypt", {}, function()
-	local key = crypt.generatekey()
-	local encrypted, iv = crypt.encrypt("test", key, nil, "CBC")
-	assert(iv, "crypt.encrypt should return an IV")
-	local decrypted = crypt.decrypt(encrypted, key, iv, "CBC")
-	assert(decrypted == "test", "Failed to decrypt raw string from encrypted data")
-end)
-
-test("crypt.decrypt", {}, function()
-	local key, iv = crypt.generatekey(), crypt.generatekey()
-	local encrypted = crypt.encrypt("test", key, iv, "CBC")
-	local decrypted = crypt.decrypt(encrypted, key, iv, "CBC")
-	assert(decrypted == "test", "Failed to decrypt raw string from encrypted data")
-end)
-
-test("crypt.generatebytes", {}, function()
-	local size = math.random(10, 100)
-	local bytes = crypt.generatebytes(size)
-	assert(#crypt.base64decode(bytes) == size, "The decoded result should be " .. size .. " bytes long (got " .. #crypt.base64decode(bytes) .. " decoded, " .. #bytes .. " raw)")
-end)
-
-test("crypt.generatekey", {}, function()
-	local key = crypt.generatekey()
-	assert(#crypt.base64decode(key) == 32, "Generated key should be 32 bytes long when decoded")
-end)
-
-test("crypt.hash", {}, function()
-	local algorithms = {'sha1', 'sha384', 'sha512', 'md5', 'sha256', 'sha3-224', 'sha3-256', 'sha3-512'}
-	for _, algorithm in ipairs(algorithms) do
-		local hash = crypt.hash("test", algorithm)
-		assert(hash, "crypt.hash on algorithm '" .. algorithm .. "' should return a hash")
-	end
-end)
-
---- Debug
-
-test("debug.getconstant", {}, function()
-	local function test()
-		print("Hello, world!")
-	end
-	assert(debug.getconstant(test, 1) == "print", "First constant must be print")
-	assert(debug.getconstant(test, 2) == nil, "Second constant must be nil")
-	assert(debug.getconstant(test, 3) == "Hello, world!", "Third constant must be 'Hello, world!'")
-end)
-
-test("debug.getconstants", {}, function()
-	local function test()
-		local num = 5000 .. 50000
-		print("Hello, world!", num, warn)
-	end
-	local constants = debug.getconstants(test)
-	assert(constants[1] == 50000, "First constant must be 50000")
-	assert(constants[2] == "print", "Second constant must be print")
-	assert(constants[3] == nil, "Third constant must be nil")
-	assert(constants[4] == "Hello, world!", "Fourth constant must be 'Hello, world!'")
-	assert(constants[5] == "warn", "Fifth constant must be warn")
-end)
-
-test("debug.getinfo", {}, function()
-	local types = {
-		source = "string",
-		short_src = "string",
-		func = "function",
-		what = "string",
-		currentline = "number",
-		name = "string",
-		nups = "number",
-		numparams = "number",
-		is_vararg = "number",
-	}
-	local function test(...)
-		print(...)
-	end
-	local info = debug.getinfo(test)
-	for k, v in pairs(types) do
-		assert(info[k] ~= nil, "Did not return a table with a '" .. k .. "' field")
-		assert(type(info[k]) == v, "Did not return a table with " .. k .. " as a " .. v .. " (got " .. type(info[k]) .. ")")
-	end
-end)
-
-test("debug.getproto", {}, function()
-	local function test()
-		local function proto()
-			return true
-		end
-	end
-	local proto = debug.getproto(test, 1, true)[1]
-	local realproto = debug.getproto(test, 1)
-	assert(proto, "Failed to get the inner function")
-	assert(proto() == true, "The inner function did not return anything")
-	if not realproto() then
-		return "Proto return values are disabled on this executor"
-	end
-end)
-
-test("debug.getprotos", {}, function()
-	local function test()
-		local function _1()
-			return true
-		end
-		local function _2()
-			return true
-		end
-		local function _3()
-			return true
-		end
-	end
-	for i in ipairs(debug.getprotos(test)) do
-		local proto = debug.getproto(test, i, true)[1]
-		local realproto = debug.getproto(test, i)
-		assert(proto(), "Failed to get inner function " .. i)
-		if not realproto() then
-			return "Proto return values are disabled on this executor"
-		end
-	end
-end)
-
-test("debug.getstack", {}, function()
-	local _ = "a" .. "b"
-	assert(debug.getstack(1, 1) == "ab", "The first item in the stack should be 'ab'")
-	assert(debug.getstack(1)[1] == "ab", "The first item in the stack table should be 'ab'")
-end)
-
-test("debug.getupvalue", {}, function()
-	local upvalue = function() end
-	local function test()
-		print(upvalue)
-	end
-	assert(debug.getupvalue(test, 1) == upvalue, "Unexpected value returned from debug.getupvalue")
-end)
-
-test("debug.getupvalues", {}, function()
-	local upvalue = function() end
-	local function test()
-		print(upvalue)
-	end
-	local upvalues = debug.getupvalues(test)
-	assert(upvalues[1] == upvalue, "Unexpected value returned from debug.getupvalues")
-end)
-
-test("debug.setconstant", {}, function()
-	local function test()
-		return "fail"
-	end
-	debug.setconstant(test, 1, "success")
-	assert(test() == "success", "debug.setconstant did not set the first constant")
-end)
-
-test("debug.setstack", {}, function()
-	local function test()
-		return "fail", debug.setstack(1, 1, "success")
-	end
-	assert(test() == "success", "debug.setstack did not set the first stack item")
-end)
-
-test("debug.setupvalue", {}, function()
-	local function upvalue()
-		return "fail"
-	end
-	local function test()
-		return upvalue()
-	end
-	debug.setupvalue(test, 1, function()
-		return "success"
-	end)
-	assert(test() == "success", "debug.setupvalue did not set the first upvalue")
-end)
-
--- Filesystem
-
-if isfolder and makefolder and delfolder then
-	if isfolder(".tests") then
-		delfolder(".tests")
-	end
-	makefolder(".tests")
-end
-
-test("readfile", {}, function()
-	writefile(".tests/readfile.txt", "success")
-	assert(readfile(".tests/readfile.txt") == "success", "Did not return the contents of the file")
-end)
-
-test("listfiles", {}, function()
-	makefolder(".tests/listfiles")
-	writefile(".tests/listfiles/test_1.txt", "success")
-	writefile(".tests/listfiles/test_2.txt", "success")
-	local files = listfiles(".tests/listfiles")
-	assert(#files == 2, "Did not return the correct number of files")
-	assert(isfile(files[1]), "Did not return a file path")
-	assert(readfile(files[1]) == "success", "Did not return the correct files")
-	makefolder(".tests/listfiles_2")
-	makefolder(".tests/listfiles_2/test_1")
-	makefolder(".tests/listfiles_2/test_2")
-	local folders = listfiles(".tests/listfiles_2")
-	assert(#folders == 2, "Did not return the correct number of folders")
-	assert(isfolder(folders[1]), "Did not return a folder path")
-end)
-
-test("writefile", {}, function()
-	writefile(".tests/writefile.txt", "success")
-	assert(readfile(".tests/writefile.txt") == "success", "Did not write the file")
-	local requiresFileExt = pcall(function()
-		writefile(".tests/writefile", "success")
-		assert(isfile(".tests/writefile.txt"))
-	end)
-	if not requiresFileExt then
-		return "This executor requires a file extension in writefile"
-	end
-end)
-
-test("makefolder", {}, function()
-	makefolder(".tests/makefolder")
-	assert(isfolder(".tests/makefolder"), "Did not create the folder")
-end)
-
-test("appendfile", {}, function()
-	writefile(".tests/appendfile.txt", "su")
-	appendfile(".tests/appendfile.txt", "cce")
-	appendfile(".tests/appendfile.txt", "ss")
-	assert(readfile(".tests/appendfile.txt") == "success", "Did not append the file")
-end)
-
-test("isfile", {}, function()
-	writefile(".tests/isfile.txt", "success")
-	assert(isfile(".tests/isfile.txt") == true, "Did not return true for a file")
-	assert(isfile(".tests") == false, "Did not return false for a folder")
-	assert(isfile(".tests/doesnotexist.exe") == false, "Did not return false for a nonexistent path (got " .. tostring(isfile(".tests/doesnotexist.exe")) .. ")")
-end)
-
-test("isfolder", {}, function()
-	assert(isfolder(".tests") == true, "Did not return false for a folder")
-	assert(isfolder(".tests/doesnotexist.exe") == false, "Did not return false for a nonexistent path (got " .. tostring(isfolder(".tests/doesnotexist.exe")) .. ")")
-end)
-
-test("delfolder", {}, function()
-	makefolder(".tests/delfolder")
-	delfolder(".tests/delfolder")
-	assert(isfolder(".tests/delfolder") == false, "Failed to delete folder (isfolder = " .. tostring(isfolder(".tests/delfolder")) .. ")")
-end)
-
-test("delfile", {}, function()
-	writefile(".tests/delfile.txt", "Hello, world!")
-	delfile(".tests/delfile.txt")
-	assert(isfile(".tests/delfile.txt") == false, "Failed to delete file (isfile = " .. tostring(isfile(".tests/delfile.txt")) .. ")")
-end)
-
-test("dofile", {})
-
--- Input
-
-test("isrbxactive", {"isgameactive"}, function()
-	assert(type(isrbxactive()) == "boolean", "Did not return a boolean value")
-end)
-
-test("mouse1click", {})
-
-test("mouse1press", {})
-
-test("mouse1release", {})
-
-test("mouse2click", {})
-
-test("mouse2press", {})
-
-test("mouse2release", {})
-
-test("mousemoveabs", {})
-
-test("mousemoverel", {})
-
-test("mousescroll", {})
-
--- Instances
-
-test("fireclickdetector", {}, function()
-	local detector = Instance.new("ClickDetector")
-	fireclickdetector(detector, 50, "MouseHoverEnter")
-end)
-
-test("getcallbackvalue", {}, function()
-	local bindable = Instance.new("BindableFunction")
-	local function test()
-	end
-	bindable.OnInvoke = test
-	assert(getcallbackvalue(bindable, "OnInvoke") == test, "Did not return the correct value")
-end)
-
-test("getconnections", {}, function()
-	local types = {
-		Enabled = "boolean",
-		ForeignState = "boolean",
-		LuaConnection = "boolean",
-		Function = "function",
-		Thread = "thread",
-		Fire = "function",
-		Defer = "function",
-		Disconnect = "function",
-		Disable = "function",
-		Enable = "function",
-	}
-	local bindable = Instance.new("BindableEvent")
-	bindable.Event:Connect(function() end)
-	local connection = getconnections(bindable.Event)[1]
-	for k, v in pairs(types) do
-		assert(connection[k] ~= nil, "Did not return a table with a '" .. k .. "' field")
-		assert(type(connection[k]) == v, "Did not return a table with " .. k .. " as a " .. v .. " (got " .. type(connection[k]) .. ")")
-	end
-end)
-
-test("getcustomasset", {}, function()
-	writefile(".tests/getcustomasset.txt", "success")
-	local contentId = getcustomasset(".tests/getcustomasset.txt")
-	assert(type(contentId) == "string", "Did not return a string")
-	assert(#contentId > 0, "Returned an empty string")
-	assert(string.match(contentId, "rbxasset://") == "rbxasset://", "Did not return an rbxasset url")
-end)
-
-test("gethiddenproperty", {}, function()
-	local fire = Instance.new("Fire")
-	local property, isHidden = gethiddenproperty(fire, "size_xml")
-	assert(property == 5, "Did not return the correct value")
-	assert(isHidden == true, "Did not return whether the property was hidden")
-end)
-
-test("sethiddenproperty", {}, function()
-	local fire = Instance.new("Fire")
-	local hidden = sethiddenproperty(fire, "size_xml", 10)
-	assert(hidden, "Did not return true for the hidden property")
-	assert(gethiddenproperty(fire, "size_xml") == 10, "Did not set the hidden property")
-end)
-
-test("gethui", {}, function()
-	assert(typeof(gethui()) == "Instance", "Did not return an Instance")
-end)
-
-test("getinstances", {}, function()
-	assert(getinstances()[1]:IsA("Instance"), "The first value is not an Instance")
-end)
-
-test("getnilinstances", {}, function()
-	assert(getnilinstances()[1]:IsA("Instance"), "The first value is not an Instance")
-	assert(getnilinstances()[1].Parent == nil, "The first value is not parented to nil")
-end)
-
-test("isscriptable", {}, function()
-	local fire = Instance.new("Fire")
-	assert(isscriptable(fire, "size_xml") == false, "Did not return false for a non-scriptable property (size_xml)")
-	assert(isscriptable(fire, "Size") == true, "Did not return true for a scriptable property (Size)")
-end)
-
-test("setscriptable", {}, function()
-	local fire = Instance.new("Fire")
-	local wasScriptable = setscriptable(fire, "size_xml", true)
-	assert(wasScriptable == false, "Did not return false for a non-scriptable property (size_xml)")
-	assert(isscriptable(fire, "size_xml") == true, "Did not set the scriptable property")
-	fire = Instance.new("Fire")
-	assert(isscriptable(fire, "size_xml") == false, "⚠️⚠️ setscriptable persists between unique instances ⚠️⚠️")
-end)
-
-test("setrbxclipboard", {})
-
--- Metatable
-
-test("getrawmetatable", {}, function()
-	local metatable = { __metatable = "Locked!" }
-	local object = setmetatable({}, metatable)
-	assert(getrawmetatable(object) == metatable, "Did not return the metatable")
-end)
-
-test("hookmetamethod", {}, function()
-	local object = setmetatable({}, { __index = newcclosure(function() return false end), __metatable = "Locked!" })
-	local ref = hookmetamethod(object, "__index", function() return true end)
-	assert(object.test == true, "Failed to hook a metamethod and change the return value")
-	assert(ref() == false, "Did not return the original function")
-end)
-
-test("getnamecallmethod", {}, function()
-	local method
-	local ref
-	ref = hookmetamethod(game, "__namecall", function(...)
-		if not method then
-			method = getnamecallmethod()
-		end
-		return ref(...)
-	end)
-	game:GetService("Lighting")
-	assert(method == "GetService", "Did not get the correct method (GetService)")
-end)
-
-test("isreadonly", {}, function()
-	local object = {}
-	table.freeze(object)
-	assert(isreadonly(object), "Did not return true for a read-only table")
-end)
-
-test("setrawmetatable", {}, function()
-	local object = setmetatable({}, { __index = function() return false end, __metatable = "Locked!" })
-	local objectReturned = setrawmetatable(object, { __index = function() return true end })
-	assert(object, "Did not return the original object")
-	assert(object.test == true, "Failed to change the metatable")
-	if objectReturned then
-		return objectReturned == object and "Returned the original object" or "Did not return the original object"
-	end
-end)
-
-test("setreadonly", {}, function()
-	local object = { success = true }
-	table.freeze(object)
-	setreadonly(object, false)
-	object.success = true
-	assert(object.success, "Did not allow the table to be modified")
-end)
-
--- Miscellaneous
-
-test("identifyexecutor", {"getexecutorname"}, function()
-	local name, version = identifyexecutor()
-	assert(type(name) == "string", "Did not return a string for the name")
-	return type(version) == "string" and "Returns version as a string" or "Does not return version"
-end)
-
-test("lz4compress", {}, function()
-	local raw = "Hello, world!"
-	local compressed = lz4compress(raw)
-	assert(type(compressed) == "string", "Compression did not return a string")
-	assert(lz4decompress(compressed, #raw) == raw, "Decompression did not return the original string")
-end)
-
-test("lz4decompress", {}, function()
-	local raw = "Hello, world!"
-	local compressed = lz4compress(raw)
-	assert(type(compressed) == "string", "Compression did not return a string")
-	assert(lz4decompress(compressed, #raw) == raw, "Decompression did not return the original string")
-end)
-
-test("messagebox", {})
-
-test("queue_on_teleport", {"queueonteleport"})
-
-test("request", {"http.request", "http_request"}, function()
-	local response = request({
-		Url = "https://httpbin.org/user-agent",
-		Method = "GET",
-	})
-	assert(type(response) == "table", "Response must be a table")
-	assert(response.StatusCode == 200, "Did not return a 200 status code")
-	local data = game:GetService("HttpService"):JSONDecode(response.Body)
-	assert(type(data) == "table" and type(data["user-agent"]) == "string", "Did not return a table with a user-agent key")
-	return "User-Agent: " .. data["user-agent"]
-end)
-
-test("setclipboard", {"toclipboard"})
-
-test("setfpscap", {}, function()
-	local renderStepped = game:GetService("RunService").RenderStepped
-	local function step()
-		renderStepped:Wait()
-		local sum = 0
-		for _ = 1, 5 do
-			sum = sum + 1 / renderStepped:Wait()
-		end
-		return math.round(sum / 5)
-	end
-	setfpscap(60)
-	local step60 = step()
-	setfpscap(0)
-	local step0 = step()
-	return step60 .. "fps @60 • " .. step0 .. "fps @0"
-end)
-
--- Scripts
-
-test("getgc", {}, function()
-	local gc = getgc()
-	assert(type(gc) == "table", "Did not return a table")
-	assert(#gc > 0, "Did not return a table with any values")
-end)
-
-test("getgenv", {}, function()
-	getgenv().__TEST_GLOBAL = true
-	assert(__TEST_GLOBAL, "Failed to set a global variable")
-	getgenv().__TEST_GLOBAL = nil
-end)
-
-test("getloadedmodules", {}, function()
-	local modules = getloadedmodules()
-	assert(type(modules) == "table", "Did not return a table")
-	assert(#modules > 0, "Did not return a table with any values")
-	assert(typeof(modules[1]) == "Instance", "First value is not an Instance")
-	assert(modules[1]:IsA("ModuleScript"), "First value is not a ModuleScript")
-end)
-
-test("getrenv", {}, function()
-	assert(_G ~= getrenv()._G, "The variable _G in the executor is identical to _G in the game")
-end)
-
-test("getrunningscripts", {}, function()
-	local scripts = getrunningscripts()
-	assert(type(scripts) == "table", "Did not return a table")
-	assert(#scripts > 0, "Did not return a table with any values")
-	assert(typeof(scripts[1]) == "Instance", "First value is not an Instance")
-	assert(scripts[1]:IsA("ModuleScript") or scripts[1]:IsA("LocalScript"), "First value is not a ModuleScript or LocalScript")
-end)
-
-test("getscriptbytecode", {"dumpstring"}, function()
-	local animate = game:GetService("Players").LocalPlayer.Character.Animate
-	local bytecode = getscriptbytecode(animate)
-	assert(type(bytecode) == "string", "Did not return a string for Character.Animate (a " .. animate.ClassName .. ")")
-end)
-
-test("getscripthash", {}, function()
-	local animate = game:GetService("Players").LocalPlayer.Character.Animate:Clone()
-	local hash = getscripthash(animate)
-	local source = animate.Source
-	animate.Source = "print('Hello, world!')"
-	task.defer(function()
-		animate.Source = source
-	end)
-	local newHash = getscripthash(animate)
-	assert(hash ~= newHash, "Did not return a different hash for a modified script")
-	assert(newHash == getscripthash(animate), "Did not return the same hash for a script with the same source")
-end)
-
-test("getscripts", {}, function()
-	local scripts = getscripts()
-	assert(type(scripts) == "table", "Did not return a table")
-	assert(#scripts > 0, "Did not return a table with any values")
-	assert(typeof(scripts[1]) == "Instance", "First value is not an Instance")
-	assert(scripts[1]:IsA("ModuleScript") or scripts[1]:IsA("LocalScript"), "First value is not a ModuleScript or LocalScript")
-end)
-
-test("getsenv", {}, function()
-	local animate = game:GetService("Players").LocalPlayer.Character.Animate
-	local env = getsenv(animate)
-	assert(type(env) == "table", "Did not return a table for Character.Animate (a " .. animate.ClassName .. ")")
-	assert(env.script == animate, "The script global is not identical to Character.Animate")
-end)
-
-test("getthreadidentity", {"getidentity", "getthreadcontext"}, function()
-	assert(type(getthreadidentity()) == "number", "Did not return a number")
-end)
-
-test("setthreadidentity", {"setidentity", "setthreadcontext"}, function()
-	setthreadidentity(3)
-	assert(getthreadidentity() == 3, "Did not set the thread identity")
-end)
-
--- Drawing
-
-test("Drawing", {})
-
-test("Drawing.new", {}, function()
-	local drawing = Drawing.new("Square")
-	drawing.Visible = false
-	local canDestroy = pcall(function()
-		drawing:Destroy()
-	end)
-	assert(canDestroy, "Drawing:Destroy() should not throw an error")
-end)
-
-test("Drawing.Fonts", {}, function()
-	assert(Drawing.Fonts.UI == 0, "Did not return the correct id for UI")
-	assert(Drawing.Fonts.System == 1, "Did not return the correct id for System")
-	assert(Drawing.Fonts.Plex == 2, "Did not return the correct id for Plex")
-	assert(Drawing.Fonts.Monospace == 3, "Did not return the correct id for Monospace")
-end)
-
-test("isrenderobj", {}, function()
-	local drawing = Drawing.new("Image")
-	drawing.Visible = true
-	assert(isrenderobj(drawing) == true, "Did not return true for an Image")
-	assert(isrenderobj(newproxy()) == false, "Did not return false for a blank table")
-end)
-
-test("getrenderproperty", {}, function()
-	local drawing = Drawing.new("Image")
-	drawing.Visible = true
-	assert(type(getrenderproperty(drawing, "Visible")) == "boolean", "Did not return a boolean value for Image.Visible")
-	local success, result = pcall(function()
-		return getrenderproperty(drawing, "Color")
-	end)
-	if not success or not result then
-		return "Image.Color is not supported"
-	end
-end)
-
-test("setrenderproperty", {}, function()
-	local drawing = Drawing.new("Square")
-	drawing.Visible = true
-	setrenderproperty(drawing, "Visible", false)
-	assert(drawing.Visible == false, "Did not set the value for Square.Visible")
-end)
-
-test("cleardrawcache", {}, function()
-	cleardrawcache()
-end)
-
--- WebSocket
-
-test("WebSocket", {})
-
-test("WebSocket.connect", {}, function()
-	local types = {
-		Send = "function",
-		Close = "function",
-		OnMessage = {"table", "userdata"},
-		OnClose = {"table", "userdata"},
-	}
-	local ws = WebSocket.connect("wss://echo.websocket.org")
-	assert(type(ws) == "table" or type(ws) == "userdata", "Did not return a table or userdata")
-	for k, v in pairs(types) do
-		if type(v) == "table" then
-			assert(table.find(v, type(ws[k])), "Did not return a " .. table.concat(v, ", ") .. " for " .. k .. " (a " .. type(ws[k]) .. ")")
 		else
-			assert(type(ws[k]) == v, "Did not return a " .. v .. " for " .. k .. " (a " .. type(ws[k]) .. ")")
+			warn("❌ " .. testName, reason);
 		end
 	end
-	ws:Close()
-end)
-
-repeat task.wait() until running == 0
-
-	local rate = math.round(passes / (passes + fails) * 100)
-	local outOf = passes .. " out of " .. (passes + fails)
-
-	print("\n")
-
-	print("UNC Summary")
-	print("✅ Tested with a " .. rate .. "% success rate (" .. outOf .. ")")
-	print("⛔ " .. fails .. " tests failed")
-	print("⚠️ " .. undefined .. " globals are missing aliases")
+	local animate = game:GetService("Players").LocalPlayer.Character.Animate;
+	if not animate then
+		warn("⚠⚠ YOU MAY GET INNACURATE RESULTS, PLEASE JOIN A BASIC ROBLOX PLACE ⚠⚠");
+	end
+	EXEname = nil;
+	print("Loading...");
+	local Soap = tick();
+	print("Grabbing executor name...");
+	local a, b = pcall(function()
+		c, d = identifyexecutor();
+	end);
+	if c then
+		EXEname = c;
+	end
+	print("STARTING sUNC test");
+	if debug.getstack then
+		local a, b = pcall(function()
+			local function lol()
+				local pp = "te" .. "st";
+				AsCon(debug.getstack(1)[1] == "test", "debug.getstack", "did not return valid first value");
+				AsCon(debug.getstack(1, 1) == "test", "debug.getstack", "did not return valid stack value");
+				return;
+			end
+			lol();
+		end);
+	end
+	if not a then
+		AsCon(4 < 3, "debug.getstack", "Returned an unexpected error (usually means the function is not implemented correctly)");
+	end
+	pcall(function()
+		if cache then
+			local container = Instance.new("Folder");
+			local part = Instance.new("Part", container);
+			cache.invalidate(container:FindFirstChild("Part"));
+			AsCon(part ~= container:FindFirstChild("Part"), "cache.invalidate", "Failed to invalidate 'Part'");
+			local part = Instance.new("Part");
+			AsCon(cache.iscached(part), "cache.iscached", "Part wasn't cached");
+			cache.invalidate(part);
+			AsCon(not cache.iscached(part), "cache.iscached", "Part was cached");
+			local part = Instance.new("Part");
+			local fire = Instance.new("Fire");
+			cache.replace(part, fire);
+			AsCon(part ~= fire, "cache.replace", "Failed to replace instances");
+		else
+			AsCon(4 < 3, "cache.invalidate", "function is nil");
+			AsCon(4 < 3, "cache.iscached", "function is nil");
+			AsCon(4 < 3, "cache.replace", "function is nil");
+		end
+	end);
+	local lol, bob;
+	if (cloneref == nil) then
+		AsCon(4 < 3, "compareinstances", "Couldn't verify due to 'cloneref' not working.");
+	else
+		lol, bob = pcall(function()
+			local a = Instance.new("Part");
+			local b = cloneref(a);
+			AsCon(a ~= b, "cloneref", "Clone shouldn't be the original");
+			AsCon(compareinstances(a, b), "compareinstances", "Clone and original should be the same under 'compareinstances' ");
+		end);
+	end
+	if not lol then
+		AsCon(4 < 3, "compareinstances", "Returned an unexpected error (usually means the function is not implemented correctly)");
+	end
+	pcall(function()
+		AsCon(checkcaller(), "checkcaller", "Should return true");
+	end);
+	pcall(function()
+		local function m()
+			return "capulapeste";
+		end
+		local copie = clonefunction(m);
+		AsCon(m() == copie(), "clonefunction", "Didn't return the same value");
+		AsCon(m ~= copie, "clonefunction", "Functions should not be the same");
+	end);
+	pcall(function()
+		if crypt then
+			local bs64 = crypt.base64_encode("Salut, am cioaca cat o margarina si asi dori ce pula, ce pula mea injur?");
+			AsCon(bs64, "base64_encode", "Didn't return a base64");
+			local dbs64 = crypt.base64_decode(bs64);
+			AsCon(dbs64 == "Salut, am cioaca cat o margarina si asi dori ce pula, ce pula mea injur?", "base64_decode", "Didn't decode base64 correctly");
+			local key = crypt.generatekey();
+			local encrypted, iv = crypt.encrypt("test", key, nil, "CBC");
+			AsCon(iv, "crypt.encrypt", "Didn't return an IV");
+			local decrypted = crypt.decrypt(encrypted, key, iv, "CBC");
+			AsCon(decrypted == "test", "crypt.decrypt", "Failed to decrypt");
+			if results['base64_decode'] then
+				local size = math.random(10, 100);
+				local bytes = crypt.generatebytes(size);
+				AsCon(#crypt.base64decode(bytes) == size, "crypt.generatebytes", "Didn't match sizes");
+			else
+				AsCon(4 < 3, "crypt.generatebytes", "Can't verify due to 'base64_decode' not working ");
+			end
+			if results['base64_decode'] then
+				local qui = crypt.generatekey();
+				AsCon(#base64_decode(qui) == 32, "crypt.generatekey", "generated key had the wrong size");
+			else
+				AsCon(4 < 3, "crypt.generatekey", "Can't verify due to 'base64_decode' not working ");
+			end
+			local algorithms = {"sha1","sha384","sha512","md5","sha256","sha3-224","sha3-256","sha3-512"};
+			for _, algorithm in ipairs(algorithms) do
+				local hash = crypt.hash("test", algorithm);
+				AsCon(hash, "crypt.hash", algorithm .. " did not return a hash");
+			end
+			local row = "SuntOmulDinLiftMEREUFERICIT%252j6yt###%^#";
+			local camprez = lz4compress(row);
+			AsCon(type(camprez) == "string", "lz4compress", "Compression should have returned a string");
+			local a, b = pcall(function()
+				AsCon(lz4decompress(camprez, #row) == row, "lz4decompress", "Decompression should've returned the original");
+			end);
+			if not a then
+				AsCon(4 < 3, "lz4decompress", "Returned an unexpected error (usually means the function is not implemented correctly) ", b);
+			end
+		else
+			AsCon(4 < 3, "CryptLibrary", "This executor doesn't have a crypt library");
+		end
+	end);
+	local a, b = pcall(function()
+		if debug.getconstant then
+			local function hi()
+				print("SYK, MANTI");
+			end
+			local a = debug.getconstant(hi, 1);
+			AsCon(a == "print", "debug.getconstant", "Didn't return the correct constant");
+			local b = debug.getconstant(hi, 3);
+			AsCon(b ~= "Hello, world!", "debug.getconstant", "SKID ALERT: 😏❌💔👍");
+			AsCon(b == "SYK, MANTI", "debug.getconstant", "Didn't return the correct constant");
+		else
+		end
+	end);
+	if not a then
+		AsCon(4 < 3, "debug.getconstant", "Returned an unexpected error (usually means the function is not implemented correctly)");
+	end
+	local a, b = pcall(function()
+		if debug.getconstants then
+			local function hi()
+				local hihello = "eu sunt smecher";
+				print("Buna siua ", hihello);
+			end
+			local constants = debug.getconstants(hi);
+			AsCon(constants[1] ~= "50000", "debug.getconstants", "⚠⚠ ATTENTION: BETA MALE DETECTED ⚠⚠");
+			AsCon(constants[1] == "print", "debug.getconstants", "Didn't return the correct constant");
+			AsCon(constants[2] == nil, "debug.getconstants", "Didn't return the correct 2nd constant");
+			AsCon(constants[3] == "Buna siua ", "debug.getconstants", "Didn't return the correct 3rd constant");
+			AsCon(constants[4] == "eu sunt smecher", "debug.getconstants", "Didn't return the 4th correct constant");
+		else
+		end
+	end);
+	if debug.getinfo then
+		local types = {source="string",short_src="string",func="function",what="string",currentline="number",name="string",nups="number",numparams="number",is_vararg="number"};
+		local function b(...)
+			print(...);
+		end
+		local info = debug.getinfo(b);
+		for i, v in pairs(types) do
+			AsCon(info[i] ~= nil, "debug.getinfo", "Did not return a table with a '" .. i .. "' field");
+			AsCon(type(info[i]) == v, "debug.getinfo", "Did not return a table with " .. i .. " as a " .. v .. " (got " .. type(info[i]) .. ")");
+		end
+	else
+	end
+	local a, b = pcall(function()
+		local function v()
+			local function insider()
+				return "MATAMARE";
+			end
+		end
+		if debug.getproto then
+			local lok = debug.getproto(v, 1, true);
+			if (lok[1]() ~= nil) then
+				AsCon(lok[1]() ~= true, "debug.getproto", "Good job trying to fake getproto");
+				AsCon(lok[1]() == "MATAMARE", "debug,getproto", "Didn't return the correct value");
+			else
+			end
+		else
+		end
+	end);
+	if not a then
+		AsCon(4 < 3, "debug.getproto", "Returned an unexpected error (usually means the function is not implemented correctly)");
+	end
+	local bo = 0;
+	local a, b = pcall(function()
+		if debug.getprotos then
+			local function loop()
+				local function _1()
+					return true;
+				end
+				local function _2()
+					return true;
+				end
+				local function _3()
+					return true;
+				end
+				local function _4()
+					return true;
+				end
+				local function _5()
+					return true;
+				end
+			end
+			local function TOOSTOOT()
+				for i in ipairs(debug.getprotos(loop)) do
+					bo += 1
+					local proto = debug.getproto(loop, i, true)[1];
+					local realproto = debug.getproto(loop, i);
+					AsCon(proto(), "debug.getprotos", "Failed to recognize the function");
+				end
+				if (bo == 3) then
+					AsCon(4 < 3, "debug.getprotos", "When I'm in a faking UNC competition and my opponent is: " .. EXEname);
+				end
+			end
+			TOOSTOOT();
+		end
+	end);
+	if (bo ~= 3) then
+		if not a then
+			AsCon(4 < 3, "debug.getprotos", "Returned an unexpected error (usually means the function is not implemented correctly)");
+		end
+	end
+	if debug.getstack then
+		local o, b = pcall(function()
+			debug.getstack();
+		end);
+		if ((o ~= false) and not b) then
+			local KK = debug.getstack();
+			if ((KK ~= nil) and (KK ~= "")) then
+				if KK[1] then
+					pcall(function()
+						AsCon(KK[1] ~= "ab", "debug.getstack", "Try not to fake unc! CHALLENGE: IMPOSSIBLE");
+						AsCon(KK[1]() ~= "ab", "debug.getstack", "Try not to fake unc CHALLENGE: IMPOSSIBLE ");
+					end);
+				end
+			end
+		end
+	end
+	if debug.getupvalue then
+		local oop = function()
+		end;
+		local function i()
+			print(oop);
+		end
+		AsCon(debug.getupvalue(i, 1) == oop, "debug.getupvalue", "Didn't return the correct upvalue");
+	else
+	end
+	if debug.getupvalues then
+		local upvalue = math.random(5, 122);
+		local function pool()
+			return upvalue;
+		end
+		AsCon(debug.getupvalues(pool)[1] == upvalue, "debug.getupvalues", "Didn't return the correct upvalue");
+	else
+	end
+	local a, b = pcall(function()
+		if debug.setconstant then
+			local function testfunc()
+				return "No";
+			end
+			debug.setconstant(testfunc, 1, "Yes");
+			AsCon(testfunc() == "Yes", "debug.setconstant", "Couldn't set the 1st constant");
+		else
+		end
+	end);
+	if not a then
+		AsCon(4 < 3, "debug.setconstant", "Returned an unexpected error (usually means the function is not implemented correctly)");
+	end
+	local a, b = pcall(function()
+		if debug.setstack then
+			local function t()
+				return "No", debug.setstack(1, 1, "Yes");
+			end
+			AsCon(t() == "Yes", "debug.setstack", "Couldn't set the first stack item");
+		else
+		end
+	end);
+	if not a then
+		AsCon(4 < 3, "debug.setstack", "Returned an unexpected error (usually means the function is not implemented correctly)");
+	end
+	local a, b = pcall(function()
+		if debug.setupvalue then
+			local function up()
+				return "No";
+			end
+			local function t()
+				return up();
+			end
+			debug.setupvalue(t, 1, function()
+				return "Yes";
+			end);
+			AsCon(t() == "Yes", "debug.setupvalue", "Couldn't set the upvalue");
+		end
+	end);
+	if not a then
+		AsCon(4 < 3, "debug.setupvalue", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	pcall(function()
+		local gc = getgc();
+		AsCon(type(gc) == "table", "getgc", "Didn't return a table");
+		AsCon(#gc > 0, "getgc", "Didn't return any values");
+	end);
+	pcall(function()
+		local env = getgenv();
+		env.testValue = 123;
+		AsCon(getgenv().testValue == 123, "getgenv_access", "Couldn't  set or retrieve the value");
+	end);
+	pcall(function()
+		local modules = getloadedmodules();
+		AsCon(type(modules) == "table", "getloadedmodules", "getloadedmodules() did not return a table");
+		local damn = false;
+		for i, v in pairs(modules) do
+			if (v.Name == "Invisicam") then
+				damn = true;
+			end
+		end
+		if (damn == false) then
+			AsCon(4 < 3, "getloadedmodules", "Couldn't fetch a loaded module");
+		end
+		local b = 0;
+		hellyea = false;
+		for i, v in pairs(modules) do
+			b = b + 1;
+			if (b > 0) then
+				hellyea = true;
+				break;
+			end
+		end
+		if (hellyea == false) then
+			hellyea = nil;
+			AsCon(4 < 3, "getloadedmodules", "Failed to list the modules");
+		end
+	end);
+	pcall(function()
+		local env = getrenv();
+		AsCon(type(env) == "table", "getrenv", "Didn't return a table");
+		local b = 0;
+		hellyea = false;
+		for i, v in pairs(getrenv()) do
+			b = b + 1;
+			if (b > 0) then
+				hellyea = true;
+				break;
+			end
+		end
+		if (hellyea == false) then
+			hellyea = nil;
+			AsCon(4 < 3, "getrenv", "Failed to list the environment");
+		end
+	end);
+	pcall(function()
+		local scripts = getrunningscripts();
+		AsCon(type(scripts) == "table", "getrunningscripts", "Didn't return a table");
+		local b = 0;
+		local hellyea = false;
+		local boomshakalakaefierbintecavara = false;
+		for _, b in scripts do
+			if ((b.Name == "CameraModule") or (b.Name == "Animate")) then
+				boomshakalakaefierbintecavara = true;
+			end
+		end
+		for i, v in pairs(scripts) do
+			b = b + 1;
+			if (b > 0) then
+				hellyea = true;
+				break;
+			end
+		end
+		if (hellyea == false) then
+			hellyea = nil;
+			AsCon(4 < 3, "getrunningscripts", "Failed to list the environment");
+		end
+		if (boomshakalakaefierbintecavara == false) then
+			AsCon(4 < 3, "getrunningscripts", "Failed to fetch a running script");
+		end
+	end);
+	pcall(function()
+		if getscripthash then
+			local scriptEX = game.Players.LocalPlayer.Character.Animate:Clone();
+			local old = getscripthash(scriptEX);
+			local src = scriptEX.Source;
+			scriptEX.Source = 'print("Am auzit ca cica esti bou")';
+			task.defer(function()
+				scriptEX.Source = src;
+			end);
+			local new = getscripthash(scriptEX);
+			AsCon(old ~= new, "getscripthash", "Returned the same hash");
+			AsCon(new == getscripthash(scriptEX), "getscripthash", "Returned different hash for same source");
+		end
+	end);
+	pcall(function()
+		local scripts = getscripts();
+		AsCon(type(scripts) == "table", "getscripts", "Didn't return a table");
+		local coitzemoi = false;
+		for i, v in pairs(getscripts()) do
+			if (v.Name == "ClassicCamera") then
+				coitzemoi = true;
+			end
+		end
+		if (coitzemoi == false) then
+			AsCon(4 < 3, "getscripts", "Couldn't fetch a script");
+		end
+		local b = 0;
+		local hellyea = false;
+		for i, v in pairs(scripts) do
+			b = b + 1;
+			if (b > 0) then
+				hellyea = true;
+				break;
+			end
+		end
+		if (hellyea == false) then
+			hellyea = nil;
+			AsCon(4 < 3, "getscripts", "Failed to list the environment");
+		end
+	end);
+	pcall(function()
+		local animate = game:GetService("Players").LocalPlayer.Character.Animate;
+		local env = getsenv(animate);
+		AsCon(type(env) == "table", "getsenv", "Did not return a table");
+		AsCon(env.script == animate, "getsenv", "The script global is not identical to Character.Animate");
+		AsCon(env['onRunning'], "getsenv", "Couldn't fetch a value from the script's env");
+		local b = 0;
+		hellyea = false;
+		for i, v in pairs(senv) do
+			b = b + 1;
+			if (b > 0) then
+				hellyea = true;
+				break;
+			end
+		end
+		if (hellyea == false) then
+			hellyea = nil;
+			AsCon(4 < 3, "getsenv", "Failed to list the environment");
+		end
+	end);
+	pcall(function()
+		local function okok()
+			return "Original";
+		end
+		local orig = okok;
+		local hooked;
+		local a, b = pcall(function()
+			hooked = hookfunction(okok, function()
+				return "Hooked";
+			end);
+		end);
+		local norig = okok;
+		AsCon(orig == norig, "hookfunction", "Original and hooked differ. Fake hookfunction");
+		if not a then
+			AsCon(4 < 3, "hookfunction", "Couldn't hook the function");
+		end
+		AsCon(okok() == "Hooked", "hookfunction", "Couldn't hook the function");
+		AsCon(hooked() == "Original", "hookfunction", "Didn't return the correct value");
+	end);
+	pcall(function()
+		local func = newcclosure(function()
+		end);
+		AsCon(iscclosure(func), "iscclosure", "Couldn't determine if the function is a cclosure");
+	end);
+	pcall(function()
+		local func = function()
+		end;
+		local closureCheck = isexecutorclosure and isexecutorclosure(func);
+		AsCon((closureCheck == false) or (closureCheck == true), "isexecutorclosure", "Couldn't determine if the function isexecutorclosure");
+	end);
+	pcall(function()
+		AsCon(islclosure(print) == false, "islclosure", "Couldn't determine if the function is lclosure");
+		AsCon(islclosure(function()
+		end) == true, "islclosure", "Executor function should be lclosure");
+	end);
+	pcall(function()
+		local func = function()
+			return "wow";
+		end;
+		local funC = newcclosure(func);
+		AsCon(func() == funC(), "newcclosure", "Closure didn't return the same value as original");
+		AsCon(func ~= funC, "newcclosure", "Closure is the same as original");
+		AsCon(iscclosure(funC), "newcclosure", "Couldn't recognize cclosure");
+	end);
+	pcall(function()
+		if setreadonly then
+			local object = {success=false};
+			table.freeze(object);
+			setreadonly(object, false);
+			object.success = true;
+			AsCon(object.success, "setreadonly", "Couldn't modify the table");
+		end
+	end);
+	pcall(function()
+		local response = request({Url="https://httpbin.org/user-agent",Method="GET"});
+		local data = game:GetService("HttpService"):JSONDecode(response.Body);
+		AsCon(type(response) == "table", "request", "Response didn't return a table");
+		AsCon(response.StatusCode == 200, "request", "Response didn't return a 200 status code");
+		AsCon((type(data) == "table") and (type(data["user-agent"]) == "string"), "request", "Did not return a table with the user agent key");
+	end);
+	local a, b = pcall(function()
+		if getscriptclosure then
+			local generated;
+			local module = game:GetService("CoreGui").RobloxGui.Modules.Common.Constants;
+			local constants = getrenv().require(module);
+			local ok, nook = pcall(function()
+				generated = getscriptclosure(module);
+			end);
+			AsCon(constants ~= generated, "getscriptclosure", "Generated module should not match the original");
+		end
+	end);
+	if not a then
+		AsCon(4 < 3, "getscriptclosure", b);
+	end
+	pcall(function()
+		AsCon(type(isrbxactive()) == "boolean", "isrbxactive", "Did not return a bool value");
+	end);
+	pcall(function()
+		local cdect = Instance.new("ClickDetector");
+		cdect.MouseClick:Once(function(plr)
+			AsCon(plr == game.Players.LocalPlayer, "fireclickdetector", "Couldn't return the correct value.");
+		end);
+		fireclickdetector(cdect);
+	end);
+	pcall(function()
+		local proxprompt = Instance.new("ProximityPrompt", Instance.new("Part", workspace));
+		local var = false;
+		proxprompt.Triggered:Once(function()
+			var = true;
+		end);
+		fireproximityprompt(proxprompt);
+		task.wait(0.1);
+		proxprompt.Parent:Destroy();
+		AsCon(var, "fireproximityprompt", "Couldn't trigger the ProximityPrompt");
+	end);
+	local a, b = pcall(function()
+		if getcallbackvalue then
+			local bind = Instance.new("BindableFunction");
+			local function test()
+				return "wow";
+			end
+			bind.OnInvoke = test;
+			AsCon(getcallbackvalue(bind, "OnInvoke") == test, "getcallbackvalue", "Didn't return the correct value");
+		end
+	end);
+	if not a then
+		AsCon(4 < 3, "getcallbackvalue", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	pcall(function()
+		if getconnections then
+			local types = {Enabled="boolean",ForeignState="boolean",LuaConnection="boolean",Function="function",Thread="thread",Fire="function",Defer="function",Disconnect="function",Disable="function",Enable="function"};
+			local bindable = Instance.new("BindableEvent");
+			bindable.Event:Connect(function()
+			end);
+			local connection = getconnections(bindable.Event)[1];
+			for k, v in pairs(types) do
+				AsCon(connection[k] ~= nil, "getconnections", "Did not return a table with a '" .. k .. "' field");
+				AsCon(type(connection[k]) == v, "getconnections", "Did not return a table with " .. k .. " as a " .. v .. " (got " .. type(connection[k]) .. ")");
+			end
+		end
+	end);
+	pcall(function()
+		if (isfolder and makefolder and delfolder and listfiles and writefile and readfile) then
+			if isfolder(".tests") then
+				delfolder(".tests");
+			end
+			makefolder(".tests");
+			if isfolder(".tests") then
+				AsCon(3 < 4, "makefolder", "An issue happened while making a folder");
+			end
+			AsCon(isfolder(".tests"), "isfolder", "Couldn't read the folder");
+			writefile(".tests/readfile.txt", "yay");
+			writefile(".tests/loadfile.txt", "return ... + 3");
+			AsCon(readfile(".tests/readfile.txt") == "yay", "writefile", "Didn't return the correct content");
+			AsCon(readfile(".tests/readfile.txt") == "yay", "readfile", "Couldn't read the file");
+			appendfile(".tests/readfile.txt", "Hello");
+			AsCon(readfile(".tests/readfile.txt") == "yayHello", "appendfile", "Couldn't append the file");
+			makefolder(".tests/listfiles");
+			writefile(".tests/listfiles/test_2.txt", "");
+			local f = listfiles(".tests/listfiles");
+			AsCon(isfile(f[1]), "isfile", "Couldn't check for file");
+			makefolder(".tests/listfiles_2");
+			makefolder(".tests/listfiles_2/test_1");
+			makefolder(".tests/listfiles_2/test_2");
+			local a, b = pcall(function()
+				return loadfile(".tests/loadfile.txt")(2);
+			end);
+			if not a then
+				AsCon(4 < 3, "loadfile", b);
+			elseif (b == 5) then
+				AsCon(3 < 4, "loadfile", "wowowow");
+			end
+			local f = listfiles(".tests/listfiles_2");
+			AsCon(#f == 2, "listfiles", "Couldn't list the files");
+			delfolder(".tests/listfiles");
+			AsCon(not isfolder(".tests/listfiles"), "delfolder", "Failed to delete file");
+			delfile(".tests/loadfile.txt");
+			AsCon(not isfile(".tests/loadfile.txt"), "delfile", "Failed to delete file");
+		else
+			AsCon(4 < 3, "loadfile", "function is nil");
+			AsCon(4 < 3, "makefolder", "function is nil");
+			AsCon(4 < 3, "isfile", "function is nil");
+			AsCon(4 < 3, "isfolder", "function is nil");
+			AsCon(4 < 3, "delfolder", "function is nil");
+			AsCon(4 < 3, "listfiles", "function is nil");
+			AsCon(4 < 3, "delfolder", "function is nil");
+			AsCon(4 < 3, "writefile", "function is nil");
+			AsCon(4 < 3, "readfile", "function is nil");
+		end
+	end);
+	pcall(function()
+		writefile(".tests/getcustomasset.txt", "tigari_la_bucata");
+		local CID = getcustomasset(".tests/getcustomasset.txt");
+		AsCon(type(CID) == "string", "getcustomasset", "Didn't return a string");
+		AsCon(#CID > 0, "getcustomasset", "Returns an empty string");
+		AsCon(string.match(CID, "rbxasset://") == "rbxasset://", "getcustomasset", "Doesn't return a 'rbxasset://' ");
+	end);
+	local a, b;
+	local oooo, pppp = pcall(function()
+		local instance = Instance.new("Fire");
+		a, b = gethiddenproperty(instance, "size_xml");
+		if ((a == nil) and (b == nil)) then
+			AsCon(4 < 3, "gethiddenproperty", "Returns nil");
+		end
+	end);
+	if not oooo then
+		AsCon(4 < 3, "gethiddenproperty", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	local success = (a == 5) and (b == true);
+	AsCon(success, "gethiddenproperty", "Failed to return the correct value or determine if the part is hidden");
+	if (results[gethiddenproperty] == false) then
+		AsCon(4 < 3, "sethiddenproperty", "Failed to verify due to 'gethiddenproperty' not working");
+	end
+	local a, b = pcall(function()
+		local fire = Instance.new("Fire");
+		local hidden = sethiddenproperty(fire, "size_xml", 6);
+		AsCon(hidden, "sethiddenproperty", "Did not return true for the hidden property");
+		AsCon(gethiddenproperty(fire, "size_xml") == 6, "sethiddenproperty", "Did not set the hidden property");
+	end);
+	if not a then
+		AsCon(4 < 3, "sethiddenproperty", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	local a, b = pcall(function()
+		AsCon(typeof(gethui()) == "Instance", "gethui", "Didn't return the correct value");
+		local sgui = Instance.new("ScreenGui");
+		sgui.Parent = gethui();
+		AsCon(gethui():FindFirstChild("ScreenGui"), "gethui", "Couldn't find the hidden ui");
+	end);
+	if not a then
+		AsCon(4 < 3, "gethui", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	local a, b = pcall(function()
+		AsCon(getinstances()[1]:IsA("Instance"), "getinstances", "Couldn't fetch the first index as instance");
+	end);
+	if not a then
+		AsCon(4 < 3, "getinstances", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	local a, b = pcall(function()
+		AsCon(getnilinstances()[1]:IsA("Instance"), "getnilinstances", "Couldn't fetch the first index as instance");
+		AsCon(getnilinstances()[1].Parent == nil, "getnilinstances", "Instance isn't parented to nil");
+	end);
+	local mmb = 0;
+	if getinstances then
+		for i, v in pairs(getinstances()) do
+			mmb += 1
+		end
+	end
+	if (mmb > 6000) then
+		AsCon(4 < 3, "getinstances", "This function is probably faked");
+	end
+	local nmb = 0;
+	if getnilinstances then
+		for i, v in pairs(getnilinstances()) do
+			nmb += 1
+		end
+	end
+	if (nmb > 222) then
+		AsCon(4 < 3, "getnilinstances", "This function is probably faked");
+	end
+	if not a then
+		AsCon(4 < 3, "getnilinstances", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	local a, b = pcall(function()
+		local fire = Instance.new("Fire");
+		AsCon(isscriptable(fire, "size_xml") == false, "isscriptable", "Did not return false for a non-scriptable property (size_xml)");
+		AsCon(isscriptable(fire, "Size") == true, "isscriptable", "Did not return true for a scriptable property (Size)");
+	end);
+	if not a then
+		AsCon(4 < 3, "isscriptable", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	local a, b = pcall(function()
+		local fire = Instance.new("Fire");
+		local wasScriptable = setscriptable(fire, "size_xml", true);
+		AsCon(wasScriptable == false, "setscriptable", "Didn't return false for a non-scriptable property");
+		AsCon(isscriptable(fire, "size_xml") == true, "setscriptable", "Didn't set the scriptable property");
+		fire = Instance.new("Fire");
+		AsCon(isscriptable(fire, "size_xml") == false, "setscriptable", "setscriptable persists between unique instances");
+	end);
+	if not a then
+		AsCon(4 < 3, "setscriptable", "Returned an unexpected error (usually means the function is not implemented correctly) ");
+	end
+	pcall(function()
+		local metatable = {__metatable="Locked!"};
+		local object = setmetatable({}, metatable);
+		AsCon(getrawmetatable(object) == metatable, "getrawmetatable", "Couldn't get the metatable");
+		local obj = setmetatable({}, {__index=newcclosure(function()
+			return false;
+		end),__metatable="Locked!"});
+		local hook = hookmetamethod(obj, "__index", function()
+			return "MAFUTINCUR";
+		end);
+		AsCon(obj.EuSuntProstCaTineTuNu_TiDaiSeama == "MAFUTINCUR", "hookmetamethod", "Couldn't hook the metamethod");
+		AsCon(hook() == false, "hookmetamethod", "Couldn't return the original function value");
+		if (results['hookmetamethod'] == false) then
+			AsCon(4 < 3, "getnamecallmethod", "Can't verify due to 'hookmetamethod' not working");
+		end
+		local a;
+		local b;
+		b = hookmetamethod(game, "__namecall", function(...)
+			if not a then
+				a = getnamecallmethod();
+			end
+			return b(...);
+		end);
+		game:GetService("Lighting");
+		AsCon(a == "GetService", "getnamecallmethod", "Couldn't get the namecallmethod");
+	end);
+	pcall(function()
+		local hi = {a=2};
+		table.freeze(hi);
+		AsCon(isreadonly(hi), "isreadonly", "Couldn't determine if the table is read-only");
+	end);
+	pcall(function()
+		local a = setmetatable({}, {__index=function()
+			return false;
+		end,__metatable="Locked!"});
+		local b = setrawmetatable(a, {__index=function()
+			return "drffgd";
+		end});
+		if not b then
+			AsCon(4 < 3, "setrawmetatable", "Executor doesn't support setrawmetatable");
+		end
+		AsCon(a, "setrawmetatable", "Couldn't return the original object");
+		AsCon(a.VINDINPARTEARADIOACTIVAARAIULUI == "drffgd", "setrawmetatable", "Failed to change the metatable return value");
+	end);
+	pcall(function()
+		if (setreadonly == nil) then
+		else
+			local a = {mata="tactu"};
+			table.freeze(a);
+			setreadonly(a, false);
+			local c, d = pcall(function()
+				a.mata = "INCEST";
+			end);
+			if not c then
+				AsCon(4 < 3, "setreadonly", "Couldn't modify the read-only table and modify the value");
+			else
+				AsCon(a.mata == "INCEST", "setreadonly", "Did not allow the table to be modified");
+			end
+		end
+	end);
+	pcall(function()
+		if getthreadidentity then
+			local original = getthreadidentity();
+			AsCon(type(getthreadidentity()) == "number", "getthreadidentity", "Did not return a number");
+			setthreadidentity(999999);
+			AsCon(getthreadidentity() == 999999, "setthreadidentity", "Failed to set thread's identity");
+			setthreadidentity(original);
+		else
+			AsCon(4 < 3, "setthreadidentity", "Couldn't verify due to 'getthreadidentity' not working");
+		end
+	end);
+	pcall(function()
+		local drawing = Drawing.new("Square");
+		drawing.Visible = true;
+		local canDestroy = pcall(function()
+			drawing:Destroy();
+		end);
+		AsCon(canDestroy, "Drawing.new", "destroy threw an error");
+		AsCon(Drawing.Fonts.UI == 0, "Drawing.Fonts", "Did not return the correct id for UI");
+		AsCon(Drawing.Fonts.System == 1, "Drawing.Fonts", "Did not return the correct id for System");
+		AsCon(Drawing.Fonts.Plex == 2, "Drawing.Fonts", "Did not return the correct id for Plex");
+		AsCon(Drawing.Fonts.Monospace == 3, "Drawing.Fonts", "Did not return the correct id for Monospace");
+		local drawing = Drawing.new("Image");
+		drawing.Visible = true;
+		AsCon(isrenderobj(drawing) == true, "isrenderobj", "Did not return true for an Image");
+		AsCon(isrenderobj(newproxy()) == false, "isrenderobj", "Did not return false for a blank table");
+		local drawing = Drawing.new("Image");
+		drawing.Visible = true;
+		AsCon(type(getrenderproperty(drawing, "Visible")) == "boolean", "getrenderproperty", "Did not return a boolean value for Image.Visible");
+		local success, result = pcall(function()
+			return getrenderproperty(drawing, "Color");
+		end);
+		if (not success or not result) then
+			AsCon(4 < 3, "getrenderproperty", "Color is not supported");
+		end
+		local drawing = Drawing.new("Square");
+		drawing.Visible = true;
+		setrenderproperty(drawing, "Visible", false);
+		AsCon(drawing.Visible == false, "setrenderproperty", "Couldn't set property's value to false");
+	end);
+	local actual;
+	local a, b = pcall(function()
+		cleardrawcache();
+	end);
+	AsCon(a == true, "cleardrawcache", "Function returned nil");
+	pcall(function()
+		local anm = game:GetService("Players").LocalPlayer.Character.Animate;
+		local bytecode = getscriptbytecode(anm);
+		AsCon(type(bytecode) == "string", "getscriptbytecode", "Couldn't fetch the script's bytecode");
+	end);
+	print("❗ Starting basic loadstring testing...");
+	local animate = game:GetService("Players").LocalPlayer.Character.Animate;
+	local a, b = pcall(function()
+		if results['getscriptbytecode'] then
+			local bytecode = getscriptbytecode(animate);
+			local func = loadstring(bytecode);
+			AsCon(type(func) ~= "function", "loadstring", "Luau bytecode should not be loadable!");
+		else
+			print("getscriptbytecode is nil, so this function may not be stable");
+		end
+	end);
+	if not a then
+		print(b);
+		AsCon(4 < 3, "loadstring", "Failed to test basic loadstring");
+	end
+	local success, err = pcall(function()
+		AsCon(loadstring("return ... + 1")(1) == 2, "loadstring", "Failed to do simple math");
+		AsCon(type(select(2, loadstring("f"))) == "string", "loadstring", "Loadstring did not return anything for a compiler error");
+	end);
+	if not success then
+		AsCon(4 < 3, "loadstring", "loadstring support is broken (💀💀😭)");
+	end
+	if (results['loadstring'] == false) then
+		AsCon(4 < 3, "loadstring[basic]", "Basic loadstring test failed");
+	end
+	getgenv().lol = false;
+	print("❗ Finished basic loadstring testing");
+	print("❗ Starting simple loadstring URL testing...");
+	local url = "https://raw.githubusercontent.com/HummingBird8/HummingRn/main/testloadstring";
+	local url2 = "http://setup.roblox.com/version-d0e8cfcd943d4ae2-API-Dump.json";
+	local function checkSimpleUrl()
+		local startTime = tick();
+		local response, results;
+		task.spawn(function()
+			response, results = pcall(function()
+				return loadstring(game:HttpGet(url))();
+			end);
+		end);
+		repeat
+			task.wait();
+		until (response ~= nil) or ((tick() - startTime) > 6) 
+		if (response and (results == "CAND_MA_IA_FLAMA")) then
+			print("✅ Passed the simple loadstring test. Short obfuscated scripts can be executed.");
+			getgenv().lol = true;
+		else
+			AsCon(4 < 3, "loadstring", "Unexpected error: " .. tostring(result));
+		end
+	end
+	checkSimpleUrl();
+	if not getgenv().lol then
+		AsCon(4 < 3, "loadstring", "Request timed out (6 seconds). loadstring may not work on large data.");
+	end
+	if (results['loadstring'] == false) then
+		AsCon(4 < 3, "loadstring[simple]", "Failed the simple loadstring test");
+	end
+	print("❗ Finished simple loadstring URL testing");
+	print("❗ Starting complicated loadstring URL testing...");
+	local function checkComplicatedUrl()
+		local startTime = tick();
+		local response, result;
+		task.spawn(function()
+			response, result = pcall(function()
+				return game:HttpGet(url2);
+			end);
+		end);
+		local startTime = tick();
+		repeat
+			task.wait();
+		until (response ~= nil) or ((tick() - startTime) > 11) 
+		if (response == nil) then
+			AsCon(4 < 3, "loadstring", "Request timed out (8 seconds). loadstring may not work on very large data.");
+		end
+		local decoded;
+		local success, err = pcall(function()
+			decoded = game:GetService("HttpService"):JSONDecode(result);
+		end);
+		if (type(decoded) == "table") then
+			getgenv().lol = true;
+		else
+			AsCon(4 < 3, "loadstring", "Failed to decode JSON from the complicated URL");
+		end
+	end
+	startTime = tick();
+	checkComplicatedUrl();
+	if (results['loadstring'] == false) then
+		AsCon(4 < 3, "loadstring[complicated]", "Failed the complicated loadstring test");
+	end
+	print("❗ Finished complicated loadstring URL testing");
+	local sookches, rolol = pcall(function()
+		local types = {Send="function",Close="function",OnMessage={"table","userdata"},OnClose={"table","userdata"}};
+		getgenv().ws = "";
+		local a, b = pcall(function()
+			ws = WebSocket.connect("ws://echo.websocket.events");
+		end);
+		if (not a and (b ~= true)) then
+			AsCon(4 < 3, "WebSocket.connect", b);
+		elseif (getgenv().ws ~= "") then
+			ws = WebSocket.connect("ws://echo.websocket.events");
+		end
+		AsCon((type(ws) == "table") or (type(ws) == "userdata"), "WebSocket.connect", "Didn't detect a table or userdata");
+		for k, v in pairs(types) do
+			if (type(v) == "table") then
+				AsCon(table.find(v, type(ws[k])), "WebSocket.connect", "Did not return a " .. table.concat(v, ", ") .. " for " .. k .. " (a " .. type(ws[k]) .. ")");
+			else
+				AsCon(type(ws[k]) == v, "WebSocket.connect", "Did not return a " .. v .. " for " .. k .. " (a " .. type(ws[k]) .. ")");
+			end
+		end
+		ws:Close();
+		getgenv().ws = "";
+	end);
+	if not sookches then
+		AsCon(4 < 3, "WebSocket.connect", rolol);
+	end
+	pcall(function()
+		local n, v = identifyexecutor();
+		AsCon(type(n) == "string", "identifyexecutor", "Didn't return the name as a string");
+	end);
+	local sortedResults = {};
+	for test, passed in pairs(results) do
+		table.insert(sortedResults, {test=test,passed=passed});
+	end
+	table.sort(sortedResults, function(a, b)
+		return a.test < b.test;
+	end);
+	table.foreach(cachedFuncs, warn);
+	print("\n\n\n");
+	for _, result in ipairs(sortedResults) do
+		if result.passed then
+			print("✅ " .. result.test);
+		else
+			print("❌ " .. result.test);
+		end
+	end
+	local totalTests = #sortedResults;
+	local passedTests = 0;
+	for _, result in ipairs(sortedResults) do
+		if result.passed then
+			passedTests = passedTests + 1;
+		end
+	end
+	local SRATE = math.floor(((passedTests / totalTests) * 100) + 0.5);
+	print("\n");
+	if (game.PlaceId ~= 4483381587) then
+		print("⚠ Your results may not be as accurate, I recommend joining 'a literal baseplate' ⚠");
+	end
+	print("\240\159\152\142 Passed the test with " .. SRATE .. "% success rate (" .. passedTests .. " out of " .. totalTests .. ")");
+	print("❌ Total tests failed: " .. (totalTests - passedTests));
+	print("\240\159\152\143 This test was made by senS (fuck all the inco pastes/unc fakers)");
+	local a = Soap - tick();
+	local next = tostring(a);
+	if (next:sub(1, 1) == "-") then
+		next = next:sub(2);
+	end
+	local next = tonumber(next);
+	function truncateToOneDecimal(num)
+		return math.floor(num * 10) / 10;
+	end
+	print("Finished the test in " .. truncateToOneDecimal(next) .. " seconds");
+	print("\n");
+	local function heki(next)
+		if (next < 2.3) then
+			return "Your executor finished the test in the best amount of time. You will probably have an amazing experience using it.";
+		elseif (next < 2.9) then
+			return "Your executor finished the test in a very good amount of time. You will probably have a very good experience using it.";
+		elseif (next <= 6) then
+			return "Your executor finished the test in a decent amount of time. You will probably have a pretty good experience using it.";
+		elseif (next <= 7) then
+			return "Your executor finished the test in a decent amount of time, meaning you will probably have a mediocre experience using it.";
+		elseif (next <= 8) then
+			return "Your executor finished the test in a less than decent amount of time, meaning you will probably have an almost okay experience using it.";
+		elseif (next <= 8.5) then
+			return "Your executor finished the test in a pretty high amount of time, meaning you will probably have a not so good experience using it.";
+		elseif (next <= 11.5) then
+			return "Your executor finished the test in a high amount of time, meaning you will probably have a bad experience using it.";
+		elseif (next <= 17) then
+			return "Your executor finished the test in a very long time, meaning you will probably have a very bad experience using it.";
+		else
+			return "Your executor is probably horrible. I recommend not using it.";
+		end
+	end
+	print(heki(next));
+end
+fankshan();
 
 ]=])
