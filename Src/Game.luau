@@ -1,4 +1,3 @@
-local Signal = require("@Src/ExploitLibrary/Signal")
 local Network = require("@Src/ExploitLibrary/Network")
 local Registry = require("@Dep/Registry")
 local Utility = require("@Dep/Utility")
