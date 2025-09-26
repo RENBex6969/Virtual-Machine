@@ -29,8 +29,8 @@ Sandbox:Run([[
 ### UNC / Unified Naming Convention
 Running the latest sUNC test is impossible due to software incompatibility and as the script communicates with the testing place
 
-1. Has an **93%** score on the UNC test
-2. Has an **87%** score on the sUNC test (Public August 2024 Version)
+1. Has an **95%** score on the UNC test
+2. Has an **88%** score on the sUNC test (Public August 2024 Version)
 
 ### Not to Implement
 1. **Debug Library - Non** :

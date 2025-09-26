@@ -447,7 +447,7 @@ return (function(MainDirectory)
     end,
     getnamecallmethod = function()
       local funcs = {}
-      local Traceback = debug.traceback("", i)
+      local Traceback = debug.traceback("")
       for line in Traceback:gmatch("[^\n]+") do
         local name = line:match("function%s+([%w_]+)")
         if name then
