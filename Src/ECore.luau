@@ -21,16 +21,21 @@ return (function(MainDirectory)
   local Getrawmetatable = getLibrary("Getrawmetatables")
   
   local HiddenProperty = {}
-  local scriptableOverrides = setmetatable({}, { __mode = "k" })
+  local scriptableOverrides = {}
   
   Registry.clonerefs = {}
   Registry.CachedInstances = {}
+  
   local LCore = Registry.LCore
   local Game = Registry.Game
   
   local CurrentThreadIdentity = {}
   local SecureFolders = {}
   local LockedMT = {}
+  
+  --[[
+    1. Some functions are impossible to implement so lite version are implemented
+  ]] 
   
   local ENV; ENV = {
     lz4compress = Compression.LZ4.compress,
@@ -71,30 +76,6 @@ return (function(MainDirectory)
     base64 = Crypt.base64,
     base64_encode = Crypt.base64.encode,
     base64_decode = Crypt.base64.decode,
-    setthreadidentity = function(Lvl)
-      CurrentThreadIdentity[coroutine.running()] = Lvl
-    end,
-    getthreadidentity = function()
-      return CurrentThreadIdentity[coroutine.running()] or 9
-    end,
-    setidentity = function(Lvl)
-      CurrentThreadIdentity[coroutine.running()] = Lvl
-    end,
-    getidentity = function()
-      return CurrentThreadIdentity[coroutine.running()] or 9
-    end,
-    setthreadcontext = function(Lvl)
-      CurrentThreadIdentity[coroutine.running()] = Lvl
-    end,
-    getthreadcontext = function()
-      return CurrentThreadIdentity[coroutine.running()] or 9
-    end,
-    set_thread_context = function(Lvl)
-      CurrentThreadIdentity[coroutine.running()] = Lvl
-    end,
-    get_thread_context = function()
-      return CurrentThreadIdentity[coroutine.running()] or 9
-    end,
     gettenv = function(Thread)
       
     end,
@@ -180,6 +161,7 @@ return (function(MainDirectory)
       local Compiled = function(...)
         return Function(...)
       end
+      
       return Compiled
     end,
     newcclosure = function(Func)
@@ -241,47 +223,42 @@ return (function(MainDirectory)
       return Succ
     end,
     cloneref = function(Object)
-      if typeof(Object) ~= "Instance" or Object == nil then
-        return false
-      end
       if not Registry.clonerefs[Object] then 
         Registry.clonerefs[Object] = {} 
       end
-      local Clone = {}
+      
       local MT = {
-        __type = "Instance",
         __tostring = function()
           return Object.Name
         end,
-        __index = function(Self, Key)
-          local Value = Object[Key]
+        __index = function(_, Key)
+          local Value = getmetatable(Object)[key]
           if type(Value) == 'function' then
             return function(_, ...)
               local Args = (...) or nil
               return Value(Object, Args)
             end
           end
-          
           return Value
         end,
-        __newindex = function(_, key, value)
-          Object[key] = value
+        __newindex = function(_, Key, Value)
+          Object[Key] = value
         end,
         __metatable = getmetatable(Object),
         __len = function(_)
           return error('attempt to get length of Object userdata value')
         end
       }
-      setmetatable(Clone, MT)
+      Clone = setmetatable({}, MT)
       table.insert(Registry.clonerefs[Object], Clone)
       return Clone
     end,
     getrawmetatable = function(Table)
+      local Table = Table or {}
       if Registry.RawMetatables[Table] then
         return Registry.RawMetatables[Table]
       end
-      local Copied = Getrawmetatable(Table)
-      return Copied
+      return Getrawmetatable(Table)
     end,
     setrawmetatable = function(Table, Metatable)
       local MT = Registry.RawMetatables[Table]
@@ -363,6 +340,10 @@ return (function(MainDirectory)
       return false
     end,
     hookmetamethod = function(Table, Index, New)
+      assert(type(Table) == "table", 'Invalid argument #1 to "hookmetamethod", table expected, but got ' .. type(Table))
+      assert(type(Index) == "string", 'Invalid argument #2 to "hookmetamethod", string expected, but got ' .. type(Index))
+      assert(New, 'Invalid argument #3 to "hookmetamethod", value expected, but got ' .. type(New))
+      
       local MT = Registry.RawMetatables[Table]
       if MT then
         local OldMetatable
@@ -383,6 +364,8 @@ return (function(MainDirectory)
       return Registry.NilInstances
     end,
     compareinstances = function(Target, Check)
+      assert(typeof(Target) == "Instance", 'Invalid argument #1 to "compareinstances", instance expected, but got ' .. typeof(Target))
+      assert(typeof(Target) == "Instance", 'Invalid argument #2 to "compareinstances", instance expected, but got ' .. typeof(Target))
       if not Registry.clonerefs[Target] then
         return Target == Check
       else
@@ -399,13 +382,23 @@ return (function(MainDirectory)
       end
       return Compiled
     end,
+    filtergc = function(...)
+      
+    end,
     getsenv = function(Path)
+      local Index = function(_, ...)
+        return setmetatable({}, {
+          __call = function(...)
+            return (...)
+          end
+        })
+      end
+      
       return setmetatable({
         script = Path
-      }, {__index = {
-        OnRunning = function() end,
-        onRunning = function() end
-      }})
+      }, {
+        __index = Index
+      })
     end,
     getscriptcontext = function(...)
       return {}
@@ -457,10 +450,15 @@ return (function(MainDirectory)
       return Registry.currentNamecall or funcs[1]
     end,
     setnamecallmethod = function(Method)
+      assert(type(Method) == "string", 'Invalid argument #1 to "setnamecallmethod", string expected, but got ' .. type(Method))
       Registry.currentNamecall = tostring(Method)
     end,
     getscriptfunction = function(module)
       return ENV.getscriptclosure(module)
+    end,
+    getfunctionhash = function(Func)
+      assert(type(Func) == "function", 'Invalid argument #1 to "getfunctionhash", function expected, but got ' .. type(Func))
+      return Serde.hash("sha-512", tostring(Func))
     end,
     getcallbackvalue = function(Object, Property)
       local Value = nil
@@ -506,7 +504,7 @@ return (function(MainDirectory)
         end
       end
     end,
-    firetouchinterest = function(...)
+    firetouchinterest = function(Interest, With, Status)
       error("Firetouchinterest not implememted", 2)
     end,
     secure_call = function(Function, _, ...)
@@ -542,17 +540,19 @@ return (function(MainDirectory)
       DrawingCache = {}
     end,
     getrenderproperty = function(Object, Value)
-      assert(ENV.isrenderobj(Object), "Invalid argument #1 to 'getrenderproperty', render object expected, got " .. typeof(Object))
+      assert(ENV.isrenderobj(Object), 'Invalid argument #1 to "getrenderproperty", render object expected, but got ' .. typeof(Object))
       return Object[Value]
     end,
     setrenderproperty = function(Object, Index, Data)
-      assert(ENV.isrenderobj(Object), "Invalid argument #1 to 'setrenderproperty', render object expected, got " .. typeof(Object))
+      assert(ENV.isrenderobj(Object), 'Invalid argument #1 to "setrenderproperty", render object expected, but got ' .. typeof(Object))
       Object[Index] = Data
     end,
     is_secured_instance = function(Instance)
+      assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "is_secured_instance", instance expected, but got ' .. typeof(Object))
       return Registry.SecuredInstances[Instance]
     end,
     set_normal_instance = function(Instance)
+      assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "set_normal_instance", instance expected, but got ' .. typeof(Object))
       local Succ, _ = pcall(function()
         Registry.SecuredInstances[Instance] = false
       end)
@@ -563,6 +563,7 @@ return (function(MainDirectory)
       end
     end,
     set_secure_instance = function(Instance)
+      assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "set_secure_instance", instance expected, but got ' .. typeof(Object))
       local Succ, _ = pcall(function()
         Registry.SecuredInstances[Instance] = false
       end)
@@ -573,6 +574,7 @@ return (function(MainDirectory)
       end
     end,
     create_secure_folder = function(Path)
+      assert(type(Path) == "string", 'Invalid argument #1 to "create_secure_folder", string expected, but got ' .. typeof(Object))
       local Parts = string.split(Path, "/")
       local Current = SecureFolders
       for _, Name in ipairs(Parts) do
@@ -588,24 +590,26 @@ return (function(MainDirectory)
       return Current.Folder
     end,
     isnetworkowner = function(Instance)
+      assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "isnetworkowner", instance expected, but got ' .. typeof(Object))
       return true
     end,
     setfpscap = function(Cap)
+      assert(type(Cap) == "number", 'Invalid argument #1 to "setfpscap", number expected, but got ' .. type(Cap))
       Registry.FpsCap = Cap
     end,
-    getfpscap = function(Cap)
+    getfpscap = function()
       return Registry.FpsCap
     end,
     setclipboard = function(Text)
-      Registry.Clipboard = Text
+      Registry.Clipboard = tostring(Text)
     end,
     toclipboard = function(Text)
-      Registry.Clipboard = Text
+      Registry.Clipboard = tostring(Text)
     end,
     setrbxclipboard = function(Text)
-      Registry.Clipboard = Text
+      Registry.Clipboard = tostring(Text)
     end,
-    getclipboard = function(Text)
+    getclipboard = function()
       return Registry.Clipboard
     end,
     queueonteleport = function(...)
@@ -644,6 +648,7 @@ return (function(MainDirectory)
       end
     end,
     getcustomasset = function(File)
+      assert(type(File) == "string", 'Invalid argument #1 to "getcustomasset", string expected, but got ' .. type(File))
       return "rbxasset://textures/tempfile"
     end,
     gethwid = function()
@@ -704,7 +709,10 @@ return (function(MainDirectory)
   
   for _, name in ipairs(ThreadManagement) do
     if name:sub(1, 3) == "set" then
-      ENV[name] = setIdentity
+      ENV[name] = function(Lvl)
+        assert(type(Lvl) == "number", 'Invalid argument #1 to ' .. name .. ', number expected, but got ' .. type(Lvl))
+        return setIdentity(Lvl)
+      end
     else
       ENV[name] = getIdentity
     end
