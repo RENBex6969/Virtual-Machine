@@ -33,16 +33,16 @@ Running the latest sUNC test is impossible due to software incompatibility and a
 2. Has an **89%** score on the sUNC test (Public August 2024 Version)
 
 ### Not to Implement
-1. **Debug Library - Non** :
-Full debug library is impossible since luau does not supply the full debug library like lua
+1. **Fully working debug Library** :
+Full debug library is impossible since luau does not supply the full debug library like lua instead it is faked to trick some scripts using the UNC (deprecated) to ensure the function is working
 
 2. **Hookfunction - Possible** : 
-Adding hookfunction support is possible but has some trade offs..
+Adding hookfunction support is possible but i dont know how
 
 ### TODO :
 
 1. **Optimizing**
-Optimizing because the compilation of the Game environment differs for most people
+Optimizing because the compilation of the Game environment differs for most people (lune)
 
 2. **Modular**
 Making the sandbox more modular for better implementation of features
