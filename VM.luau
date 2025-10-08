@@ -1,6 +1,7 @@
 local VM = require("./Sandbox")
 
-VM:Run([=[
+--[[VM:Run([=[
+print(loadstring("#({...})"))
 
 local passes, fails, undefined = 0, 0, 0
 local running = 0
@@ -802,6 +803,7 @@ end)
 test("isrenderobj", {}, function()
 	local drawing = Drawing.new("Image")
 	drawing.Visible = true
+	
 	assert(isrenderobj(drawing) == true, "Did not return true for an Image")
 	assert(isrenderobj(newproxy()) == false, "Did not return false for a blank table")
 end)
@@ -863,6 +865,11 @@ repeat task.wait() until running == 0
 	print("✅ Tested with a " .. rate .. "% success rate (" .. outOf .. ")")
 	print("⛔ " .. fails .. " tests failed")
 	print("⚠️ " .. undefined .. " globals are missing aliases")
+	
+]=])]]
+VM:Run([=[
+local all = getallthreads()
+print(#all)
 
-]=])
+  ]=])
 	

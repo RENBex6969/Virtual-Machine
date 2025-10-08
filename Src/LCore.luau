@@ -6,9 +6,6 @@ local Luau = require("@lune/luau")
 local getLibrary = Utility.getLLibrary
 local ModuleCache = {}
 
-local MAX_DEPTH = 50
-local _indexDepth = setmetatable({}, {__mode = "k"}) -- weak table per table
-
 local function isClone(obj)
 	for _, clones in pairs(Registry.clonerefs) do
 		if table.find(clones, obj) then
@@ -89,7 +86,7 @@ local LCore = {
     return table.unpack(...)
   end,
   next = function(t, k)
-    local getrawmetatable = Registry.GlobalVariables.getrawmetatable
+    local getrawmetatable = Registry.ECore.getrawmetatable
     local MT = getrawmetatable(t)
     if MT and MT.__NEXT__ then
       return MT.__NEXT__(t, k)
@@ -97,7 +94,7 @@ local LCore = {
     return next(t, k)
   end,
   pairs = function(Table)
-    local getrawmetatable = Registry.GlobalVariables.getrawmetatable
+    local getrawmetatable = Registry.ECore.getrawmetatable
     local MT = getrawmetatable(Table)
     if MT and MT.__PAIRS__ then
       return MT.__PAIRS__(Table)
@@ -105,7 +102,7 @@ local LCore = {
     return pairs(Table)
   end,
   ipairs = function(Table)
-    local getrawmetatable = Registry.GlobalVariables.getrawmetatable
+    local getrawmetatable = Registry.ECore.getrawmetatable
     local MT = getrawmetatable(Table)
     if MT and MT.__IPAIRS__ then
       return MT.__IPAIRS__(Table)

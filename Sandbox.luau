@@ -19,7 +19,7 @@ function Sandbox:Create()
   local GameShortcuts = require("@Src/GameShortcuts")(Game)
   local RobloxAPI = {}
   
-  if isMade == false then
+  if not isMade then
     RobloxAPI = require("@Src/RobloxAPI")(Registry.Roblox, Registry.CachedInstances, Registry, Game)
     CacheRobloxAPI = RobloxAPI
   else
@@ -63,14 +63,13 @@ function Sandbox:Create()
     return true
   end
   
+  Registry.ECore = ECore
+  
   local MT = {
     __index = function(_, Key)
-      local Source = debug.info(coroutine.running(), 2, "s")
-      if Source == MainDirectory .. "Sandbox" then
-        error("[SECRUITY]: Attempt to escape envrionmemt!", 3)
-      end
+      local Value
       
-      local Value = rawget(LCore, Key)
+      Value = rawget(LCore, Key)
       if Value ~= nil then
         return Value
       end
@@ -99,20 +98,15 @@ function Sandbox:Create()
         return ECore
       end
       
-      --print("Missing", Key)
+      print("[VM]: Missing", Key)
       return nil
     end,
-    __newindex = function(_, Key, Value)
-      local Source = debug.info(coroutine.running(), 2, "s")
-      if Source == MainDirectory .. "Sandbox" then
-        error("[SECRUITY]: Attempt to escape envrionmemt!", 3)
-      end
-      
+    --[[__newindex = function(_, Key, Value)
       rawset(Registry.GlobalVariables, Key, Value)
-    end,
+    end,]]
   }
   
-  return ECore, MT
+  return ECore, MT, Registry
 end
 
 --[[
@@ -148,7 +142,7 @@ function Sandbox:Run(Code, ...)
   
   print(">--------------------------------------------------------------------")
   local Time = os.clock()
-  local ECore, MT = Sandbox:Create()
+  local ECore, MT, Registry = Sandbox:Create()
   local Compiled = setmetatable(ECore, MT)
   
   print("[VM]: Compilation of Environment took " .. (os.clock() - Time) .. " seconds")
@@ -227,18 +221,22 @@ function Sandbox:Run(Code, ...)
     codegenEnabled = false
   })
 
-  return Task.spawn(function(...)
+  local Thread = Task.spawn(function(...)
     local succ, er = xpcall(function(...) 
       return CompiledFN(...) 
     end, function(err) 
       return debug.traceback(tostring(err), 2) 
     end, ...)
+    
     if not succ then
       print("[RUNTIME - ERROR]:", er)
     end
   
     return succ, er
   end)
+  
+  Registry.ThreadEnvironments[Thread] = Registry.GlobalVariables
+  return Thread
 end
 
 return Sandbox

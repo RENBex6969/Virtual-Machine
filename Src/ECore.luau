@@ -77,12 +77,35 @@ return (function(MainDirectory)
     base64_encode = Crypt.base64.encode,
     base64_decode = Crypt.base64.decode,
     gettenv = function(Thread)
+      assert(Thread, 'Invalid argument #1 to "gettenv", thread expected, but got ' .. type(Thread))
       
+      -- A full working gettenv is possible but i dont have time to implement it yet
+      local Environment = {}
+      for Index, ENV in pairs(Registry.ThreadEnvironments) do
+        if Index == Thread then
+          Environment = ENV
+        end
+      end
+      
+      return setmetatable(Environment, {})
+    end,
+    getallthreads = function()
+      local Threads = {}
+      
+      for Thread, _ in pairs(Registry.ThreadEnvironments) do
+        table.insert(Threads, Thread)
+      end
+      
+      return Threads
     end,
     isdbgpresent = function()
       return true
     end,
     sethiddenproperty = function(Instance, Property, Value)
+      assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "sethiddenproperty", instance expected, but got ' .. typeof(Instance))
+      assert(type(Property) == "string", 'Invalid argument #2 to "sethiddenproperty", string expected, but got ' .. type(Property))
+      assert(Value, 'Invalid argument #3 to "sethiddenproperty", value expected, but got ' .. type(Value))
+      
       local InstanceProperty = HiddenProperty[Instance]
       if not InstanceProperty then
         InstanceProperty = {}
@@ -92,47 +115,60 @@ return (function(MainDirectory)
       return true
     end,
     gethiddenproperty = function(Instance, Property) 
+      assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "gethiddenproperty", instance expected, but got ' .. typeof(Instance))
+      assert(type(Property) == "string", 'Invalid argument #2 to "gethiddenproperty", string expected, but got ' .. type(Property))
+      
       local InstanceProperty = HiddenProperty[Instance]
       if InstanceProperty and InstanceProperty[Property] then
         return InstanceProperty[Property], true
       end
+      
       if Property == "size_xml" and Instance:IsA("Fire") then
         return HiddenProperty[Instance] and HiddenProperty[Instance][Property] or 5, true
       end
+      
       return nil, false
     end,
-    isexecutorclosure = function(fn)
-      local src = debug.info(fn, "s") or ""
+    isexecutorclosure = function(Func)
+      assert(type(Func) == "function", 'Invalid argument #1 to "isexecutorclosure", function expected, but got ' .. type(Func))
+      
+      local src = debug.info(Func, "s") or ""
       src = src:gsub("%s+$", "")
       if src:sub(1, #WrapDirectory("Dependency/Game/")) == WrapDirectory("/Dependency/Game/") then
         return false
       end
       
-      if debug.info(fn, "s") == WrapDirectory("Src/ECore") then
+      if debug.info(Func, "s") == WrapDirectory("Src/ECore") then
         return true
       end
-      if debug.info(fn, "s") == WrapDirectory("Src/LCore") then
+      if debug.info(Func, "s") == WrapDirectory("Src/LCore") then
         return false
       end
       return true
     end,
-    checkclosure = function(fn)
-      return ENV.isexecutorclosure(fn)
+    checkclosure = function(Func)
+      assert(type(Func) == "function", 'Invalid argument #1 to "checkclosure", function expected, but got ' .. type(Func))
+      return ENV.isexecutorclosure(Func)
     end,
-    isourclosure = function(fn)
-      return ENV.isexecutorclosure(fn)
+    isourclosure = function(Func)
+      assert(type(Func) == "function", 'Invalid argument #1 to "isourclosure", function expected, but got ' .. type(Func))
+      return ENV.isexecutorclosure(Func)
     end,
     cache = {
       iscached = function(Obj)
+        assert(typeof(Obj) == "Instance", 'Invalid argument #1 to "cache.iscached", instance expected, but got ' .. typeof(Obj))
         return Registry.CachedInstances[Obj] ~= 'invalid'
       end,
       invalidate = function(Obj)
+        assert(typeof(Obj) == "Instance", 'Invalid argument #1 to "cache.invalidate", instance expected, but got ' .. typeof(Obj))
         pcall(function() 
           Registry.CachedInstances[Obj] = 'invalid' 
           Obj.Parent = nil
         end)
       end,
       replace = function(Old, New)
+        assert(typeof(Old) == "Instance", 'Invalid argument #1 to "cache.replace", instance expected, but got ' .. typeof(Old))
+        assert(typeof(New) == "Instance", 'Invalid argument #2 to "cache.replace", instance expected, but got ' .. typeof(New))
         Registry.CachedInstances[Old] = New
         New.Name = Old.Name
         New.Parent = Old.Parent
@@ -140,6 +176,9 @@ return (function(MainDirectory)
       end
     },
     isscriptable = function(Instance, Property)
+      assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "isscriptable", instance expected, but got ' .. typeof(Instance))
+      assert(Property, 'Invalid argument #2 to "isscriptable", value expected, but got ' .. type(Property))
+      
       assert(typeof(Instance) == "Instance", "Argument #1 to 'isscriptable' must be an Instance, got " .. typeof(Instance))
       if scriptableOverrides[Instance] and scriptableOverrides[Instance][Property] ~= nil then
         return scriptableOverrides[Instance][Property]
@@ -149,15 +188,18 @@ return (function(MainDirectory)
       end))
     end,
     setscriptable = function(Instance, Property, Value)
-      assert(typeof(Instance) == "Instance", "Argument #1 must be an Instance")
-      assert(type(Property) == "string", "Argument #2 must be a string")
-      assert(type(Value) == "boolean", "Argument #3 must be a boolean")
+      assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "setscriptable", instance expected, but got ' .. typeof(Instance))
+      assert(type(Property) == "string", 'Invalid argument #2 to "setscriptable", string expected, but got ' .. type(Property))
+      assert(type(Value) == "boolean", 'Invalid argument #3 to "setscriptable", boolean expected, but got ' .. type(Value))
+      
       scriptableOverrides[Instance] = scriptableOverrides[Instance] or {}
       local wasScriptable = ENV.isscriptable(Instance, Property)
       scriptableOverrides[Instance][Property] = Value
       return wasScriptable
     end,
     clonefunction = function(Function)
+      assert(type(Function) == "function", 'Invalid argument #1 to "clonefunction", function expected, but got ' .. type(Function))
+      
       local Compiled = function(...)
         return Function(...)
       end
@@ -165,6 +207,9 @@ return (function(MainDirectory)
       return Compiled
     end,
     newcclosure = function(Func)
+      assert(type(Func) == "function", 'Invalid argument #1 to "newcclosure", function expected, but got ' .. type(Func))
+      
+      -- Yes i made newcclosures using "coroutine"
       local Compiled = coroutine.wrap(function(...)
         local Unpacked = {coroutine.yield()}
         while true do
@@ -172,16 +217,20 @@ return (function(MainDirectory)
         end
       end)
       Compiled()
+      
       Registry.CClosures[Func] = true
       return Compiled
     end,
     newlclosure = function(Function)
-      local Compiled = function(...)
+      assert(type(Function) == "function", 'Invalid argument #1 to "newlclosure", function expected, but got ' .. type(Function))
+      
+      return function(...)
         return Function(...)
       end
-      return Compiled
     end,
     iscclosure = function(Function)
+      assert(type(Function) == "function", 'Invalid argument #1 to "iscclosure", function expected, but got ' .. type(Function))
+      
       if type(Function) ~= "function" or Function == nil then
         return false
       end
@@ -200,6 +249,15 @@ return (function(MainDirectory)
       if debug.info(Function, "s") == WrapDirectory("Src/ExploitLibrary/FileSystem") then
         return true
       end
+      if debug.info(Function, "s") == WrapDirectory("Src/ExploitLibrary/Debug") then
+        return true
+      end
+      if debug.info(Function, "s") == WrapDirectory("Src/ExploitLibrary/WebSocket") then
+        return true
+      end
+      if debug.info(Function, "s") == WrapDirectory("Src/ExploitLibrary/Drawing") then
+        return true
+      end
       if debug.info(Function, "s") == "Missing source" then
         return true
       end
@@ -214,11 +272,16 @@ return (function(MainDirectory)
       return false
     end,
     islclosure = function(Function)
+      assert(type(Function) == "function", 'Invalid argument #1 to "islclosure", function expected, but got ' .. type(Table))
+      
       return ENV.iscclosure(Function) == false
     end,
-    setfflags = function(Flag, Status)
+    setfflags = function(Flag, Value)
+      assert(type(Flag) == "string", 'Invalid argument #1 to "setfflags", string expected, but got ' .. type(Flag))
+      assert(type(Value) == "string" or type(Value) == "number", 'Invalid argument #2 to "setfflags", string or number expected, but got ' .. type(Table))
+      
       local Succ, _ = pcall(function()
-        Registry.FFlags[Flag] = Status
+        Registry.FFlags[Flag] = Value
       end)
       return Succ
     end,
@@ -249,18 +312,22 @@ return (function(MainDirectory)
           return error('attempt to get length of Object userdata value')
         end
       }
-      Clone = setmetatable({}, MT)
+      local Clone = setmetatable({}, MT)
       table.insert(Registry.clonerefs[Object], Clone)
       return Clone
     end,
     getrawmetatable = function(Table)
-      local Table = Table or {}
+      assert(type(Table) == "table", 'Invalid argument #1 to "getrawmetatable", table expected, but got ' .. type(Table))
+      
       if Registry.RawMetatables[Table] then
         return Registry.RawMetatables[Table]
       end
       return Getrawmetatable(Table)
     end,
     setrawmetatable = function(Table, Metatable)
+      assert(type(Table) == "table", 'Invalid argument #1 to "setrawmetatable", table expected, but got ' .. type(Table))
+      assert(type(Metatable) == "table", 'Invalid argument #2 to "setrawmetatable", table expected, but got ' .. type(Table))
+      
       local MT = Registry.RawMetatables[Table]
       if not MT then
         Registry.RawMetatables[Table] = Metatable
@@ -282,6 +349,9 @@ return (function(MainDirectory)
       return Compiled
     end,
     setreadonly = function(Table, Status)
+      assert(type(Table) == "table", 'Invalid argument #1 to "setreadonly", table expected, but got ' .. type(Table))
+      assert(type(Status) == "boolean", 'Invalid argument #2 to "setreadonly", boolean expected, but got ' .. type(Table))
+      
       if Table == Game then
         local MT = ENV.getrawmetatable(Game)
         if Status == false then
@@ -331,6 +401,7 @@ return (function(MainDirectory)
       return Table
     end,
     isreadonly = function(Table)
+      assert(type(Table) == "table", 'Invalid argument #1 to "isreadonly", table expected, but got ' .. type(Table))
       if type(Table) == "table" then
         local mt = ENV.getrawmetatable(Table)
         if mt and mt.__readonly then
@@ -419,10 +490,10 @@ return (function(MainDirectory)
         return nil
       end
     end,
-    getscriptbytecode = function()
+    getscriptbytecode = function(...)
       return "Invalid"
     end,
-    dumpstring = function()
+    dumpstring = function(...)
       return "Invalid"
     end,
     getscriptclosure = function(module)
@@ -468,14 +539,16 @@ return (function(MainDirectory)
       return Value
     end,
     fireclickdetector = function(ClickDetector, distance, EventType)
-      assert(ClickDetector and ClickDetector.MouseClick, "First argument is not ClickDetector")
+      assert(ClickDetector and ClickDetector.MouseClick, 'Invalid argument #1 to "fireclickdetector", clickdetector expected, but got ' .. typeof(ClickDetector))
       local eventToFire
       if EventType and typeof(EventType) == "string" and ClickDetector[EventType] then
         eventToFire = ClickDetector[EventType]
       else
         eventToFire = ClickDetector.MouseClick
       end
-      assert(eventToFire, "Event not found on ClickDetector")
+      
+      assert(eventToFire, 'Invalid argument #1 to "fireclickdetector", event on clickdetector expected, but got nil')
+      
       if type(eventToFire.Fire) == "function" then
         eventToFire:Fire(Game.Players.LocalPlayer)
       else
@@ -507,7 +580,11 @@ return (function(MainDirectory)
     firetouchinterest = function(Interest, With, Status)
       error("Firetouchinterest not implememted", 2)
     end,
-    secure_call = function(Function, _, ...)
+    secure_call = function(Function, Environment, ...)
+      assert(type(Function) == "function", 'Invalid argument #1 to "secure_call", function expected, but got ' .. typeof(Function))
+      assert(type(Environment) == "table", 'Invalid argument #2 to "secure_call", table expected, but got ' .. typeof(Environment))
+      local Arguments = {...}
+      
       return Function(...)
     end,
     identifyexecutor = function()
@@ -526,6 +603,7 @@ return (function(MainDirectory)
       return true
     end,
     isrenderobj = function(Obj)
+      assert(type(Obj) == "userdata", 'Invalid argument #1 to "isrenderobj", userdata expected, but got ' .. typeof(Obj))
       for _, Object in pairs(Registry.DrawingCache) do
         if Object.proxy == Obj then
           return true
@@ -612,16 +690,18 @@ return (function(MainDirectory)
     getclipboard = function()
       return Registry.Clipboard
     end,
-    queueonteleport = function(...)
+    queueonteleport = function(Script)
+      assert(type(Script) == "string", 'Invalid argument #1 to "queueonteleport", string expected, but got ' .. typeof(Script))
       return
     end,
-    queue_on_teleport = function(...)
+    queue_on_teleport = function(Script)
+      assert(type(Script) == "string", 'Invalid argument #1 to "queue_on_teleport", string expected, but got ' .. typeof(Script))
       return
     end,
     getgenv = function()
       return setmetatable(ENV, {
         __newindex = function(_, Key, Value)
-          Registry.GlobalVariables[Key] = Value
+          rawset(Registry.GlobalVariables, Key, Value)
           rawset(ENV, Key, Value)
         end
       })
@@ -662,6 +742,12 @@ return (function(MainDirectory)
     end,
     isluau = function()
       return true
+    end,
+    islua = function()
+      return false
+    end,
+    printreg = function()
+      print(Registry.GlobalVariables)
     end,
     Drawing = Drawing,
   }
