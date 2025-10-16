@@ -17,7 +17,7 @@ end
 
 local LCore = {
   print = function(...)
-    return print("[PRINT]:", ...)
+   -- return print("[PRINT]:", ...)
   end,
   warn = function(...)
     return print("[WARN]:", ...)

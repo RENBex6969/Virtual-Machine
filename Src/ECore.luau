@@ -286,6 +286,8 @@ return (function(MainDirectory)
       return Succ
     end,
     cloneref = function(Object)
+      assert(typeof(Object) == "Instance", 'Invalid argument #1 to "cloneref", instance expected, but got ' .. type(Table))
+      
       if not Registry.clonerefs[Object] then 
         Registry.clonerefs[Object] = {} 
       end
@@ -305,11 +307,11 @@ return (function(MainDirectory)
           return Value
         end,
         __newindex = function(_, Key, Value)
-          Object[Key] = value
+          Object[Key] = Value
         end,
         __metatable = getmetatable(Object),
         __len = function(_)
-          return error('attempt to get length of Object userdata value')
+          return #Object
         end
       }
       local Clone = setmetatable({}, MT)
@@ -750,6 +752,7 @@ return (function(MainDirectory)
       print(Registry.GlobalVariables)
     end,
     Drawing = Drawing,
+    _VERSION = "Luau"
   }
   
   local Debug = getLibrary("Debug")(ENV)

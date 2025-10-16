@@ -101,9 +101,9 @@ function Sandbox:Create()
       print("[VM]: Missing", Key)
       return nil
     end,
-    --[[__newindex = function(_, Key, Value)
+    __newindex = function(_, Key, Value)
       rawset(Registry.GlobalVariables, Key, Value)
-    end,]]
+    end,
   }
   
   return ECore, MT, Registry
@@ -150,6 +150,7 @@ function Sandbox:Run(Code, ...)
   
   local Count = 0
   rawset(ECore, "loadstring", function(code, chunkName)
+    assert(type(code) == "string", 'Invalid argument #1 to "loadstring", string expected, but got ' .. type(code))
     
     chunkName = chunkName or "[VM - Loadstring]: " .. Count
     Count = Count + 1
@@ -180,6 +181,9 @@ function Sandbox:Run(Code, ...)
   
   local Count2 = 0
   rawset(ECore, "loadfile", function(Path)
+    assert(type(code) == "string", 'Invalid argument #1 to "loadfile", string expected, but got ' .. type(code))
+    assert(type(chunkName) == "string", 'Invalid argument #2 to "loadfile", string expected, but got ' .. type(code))
+    
     chunkName = chunkName or "[VM - Loadfile]: " .. Count
     Count2 = Count2 + 1
     local IsOk, Bytecode = pcall(function()
@@ -207,6 +211,38 @@ function Sandbox:Run(Code, ...)
     
     return callableFn
   end)
+  
+  local Count3 = 0
+  rawset(ECore, "load", function(code, chunkName)
+    assert(type(code) == "string", 'Invalid argument #1 to "load", string expected, but got ' .. type(code))
+    
+    chunkName = chunkName or "[VM - LOAD]: " .. Count
+    Count3 = Count3 + 1
+    local IsOk, Bytecode = pcall(function()
+      return Luau.compile(code, {
+        optimizationLevel = 0,
+        coverageLevel = 0,
+        debugLevel = 2
+      })
+    end)
+    if not IsOk then
+      return nil, tostring(Bytecode)
+    end
+    
+    local IsOk2, callableFn = pcall(function()
+      return Luau.load(Bytecode, {
+        debugName = string.format(chunkName),
+        environment = setmetatable(table.unpack({require("./Sandbox"):Create()})),
+        injectGlobals = false,
+      })
+    end)
+    
+    if not IsOk2 then
+      return nil, tostring(callableFn)
+    end
+    return callableFn
+  end)
+  
   
   local Bytecode = Luau.compile(Code, {
     optimizationLevel = 2,
