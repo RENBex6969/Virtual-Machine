@@ -7,6 +7,9 @@ Runs roblox **scripts** on a executor environment with a partial **Roblox API**
 2. Fork this current repository
 3. Follow instruction **1 & 2**
 
+### Notes
+I dont recommend at all using this in a production envrionment as it is not secured enough to prevent environment leaking
+
 ### Usage
 The VM has bulit in API system you can use it on your scripts!
 
@@ -29,8 +32,8 @@ Sandbox:Run([[
 ### UNC / Unified Naming Convention
 Running the latest sUNC test is impossible due to software incompatibility and as the script communicates with the testing place
 
-1. Has an **95%** score on the UNC test
-2. Has an **89%** score on the sUNC test (Public August 2024 Version)
+1. Has an **96%** score on the UNC test
+2. Has an **90%** score on the sUNC test (Public August 2024 Version)
 
 ### Not to Implement
 1. **Fully working debug Library** :
