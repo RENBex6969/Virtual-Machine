@@ -34,10 +34,12 @@ Running the latest sUNC test is impossible due to software incompatibility and a
 
 ### Not to Implement
 1. **Fully working debug Library** :
-Full debug library is impossible since luau does not supply the full debug library like lua instead it is faked to trick some scripts using the UNC (deprecated) to ensure the function is working
+Full debug library is impossible since luau does not supply the full debug library like lua instead it is faked to trick some scripts using the UNC (deprecated) to ensure a function is working
 
 2. **Hookfunction - Possible** : 
-Adding hookfunction support is possible but i dont know how
+Adding hookfunction support is possible but i dont know how.
+
+Hookfunction is implememted but requires an extra step which is very hard
 
 ### TODO :
 

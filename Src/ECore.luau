@@ -713,10 +713,13 @@ return (function(MainDirectory)
         return getfenv(2 + (Args or 0))
       end
       local ECore, MT = require("../Sandbox"):Create()
+      local ENV = setmetatable(ECore, MT)
       return setmetatable({
         script = "Script"
       }, {
-        __index = setmetatable(ECore, MT)
+        __index = function(_, Key)
+          return ENV[Key]
+        end
       })
     end,
     setfenv = function(Arg, Environment)

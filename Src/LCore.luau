@@ -23,11 +23,18 @@ local LCore = {
     return print("[WARN]:", ...)
   end,
   error = function(Message, Stack)
+    assert(type(Message) == "string", 'Invalid argument #1 to "error", string expected, but got ' .. type(Message))
+    if not type(Stack) == nil then
+      assert(type(Level) == "number", 'Invalid argument #2 to "error", number expected, but got ' .. type(Level))
+    end
+    
     return error(Message, (Stack or 0)+ 2)
   end,
-  pcall = function(Func, ...)
+  pcall = function(Function, ...)
+    assert(type(Function) == "function", 'Invalid argument #1 to "pcall", function expected, but got ' .. type(Function))
+    
     local Arguments = {...}
-    local Results = {pcall(Func, ...)}
+    local Results = {pcall(Function, ...)}
     local Error = Results[2]
     if not Results[1] and type(Error) == "string" and string.find(Error, "attempt to perform arithmetic") then
       local Line = Error:sub(1, Error:find(":(%d*):")) .. "1:"
@@ -36,7 +43,7 @@ local LCore = {
           return Metatable
         end
       },{
-        __eq = function()
+        __eq = function(L, R)
           return true
         end, 
         __tostring = function()
@@ -51,22 +58,29 @@ local LCore = {
         Results[2] = Results[2]:gsub(":%d+:",":1:")
       end)
     end
-    local Succ, Err = table.unpack(Results)
-    if type(err) == "userdata" then
-      Err = tostring(Err)
+    local Args = {table.unpack(Results)}
+    if type(Args[1]) == "userdata" then
+      Args[1] = tostring(Args[1])
     end
-    return table.unpack(Results)
+    
+    return table.unpack(Args)
   end,
-  xpcall = function(...)
-    return xpcall(...)
+  xpcall = function(Function, Debug, ...)
+    assert(type(Function) == "function", 'Invalid argument #1 to "xpcall", function expected, but got ' .. type(Function))
+    assert(type(Debug) == "function", 'Invalid argument #2 to "xpcall", function expected, but got ' .. type(Debug))
+    
+    return xpcall(Function, Debug, ...)
   end,
   tonumber = function(...)
+    print({...})
     return tonumber(...)
   end,
   tostring = function(...)
     return tostring(...)
   end,
-  assert = function(Condition, Message, ...)
+  assert = function(Condition, Message)
+    --assert(type(Message) == "string", 'Invalid argument #1 to "assert", string expected, but got ' .. type(Message))
+    
     if not Condition then
       error(Message or "assertion failed!", 2)
     end
@@ -76,6 +90,7 @@ local LCore = {
     return select(...)
   end,
   newproxy = function(HasMT)
+    
     local Userdata = newproxy(HasMT)
     if HasMT then
       Registry.RawMetatables[Userdata] = getmetatable(Userdata)
@@ -94,6 +109,8 @@ local LCore = {
     return next(t, k)
   end,
   pairs = function(Table)
+    assert(type(Table) == "table", 'Invalid argument #1 to "pairs", table expected, but got ' .. type(Table))
+    
     local getrawmetatable = Registry.ECore.getrawmetatable
     local MT = getrawmetatable(Table)
     if MT and MT.__PAIRS__ then
@@ -102,6 +119,8 @@ local LCore = {
     return pairs(Table)
   end,
   ipairs = function(Table)
+    assert(type(Table) == "table", 'Invalid argument #1 to "ipairs", table expected, but got ' .. type(Table))
+    
     local getrawmetatable = Registry.ECore.getrawmetatable
     local MT = getrawmetatable(Table)
     if MT and MT.__IPAIRS__ then
@@ -109,20 +128,29 @@ local LCore = {
     end
     return ipairs(Table)
   end,
-  type = function(...)
-    return type(...)
+  type = function(Object)
+    
+    return type(Object)
   end,
   typeof = function(Object)
+    
     if isClone(Object) then
       return "Instance"
     end
     return typeof(Object)
   end,
-  rawset = function(...)
-    return rawset(...)
+  rawset = function(Table, Index, Object)
+    assert(type(Table) == "table", 'Invalid argument #1 to "rawset", table expected, but got ' .. type(Table))
+    assert(type(Index) == "string", 'Invalid argument #2 to "rawset", string expected, but got ' .. type(Index))
+    assert(Object, 'Missing #3 argument to "rawset"')
+    
+    return rawset(Table, Index, Object)
   end,
-  rawget = function(...)
-    return rawget(...)
+  rawget = function(Table, Index)
+    assert(type(Table) == "table", 'Invalid argument #1 to "rawget", table expected, but got ' .. type(Table))
+    assert(type(Index) == "string", 'Invalid argument #2 to "rawget", string expected, but got ' .. type(Index))
+    
+    return rawget(Table, Index)
   end,
   rawequal = function(...)
     return rawequal(...)
@@ -142,8 +170,11 @@ local LCore = {
   tick = function(...)
     return os.time() + (os.clock() % 1)
   end,
-  delay = function(Seconds, Func)
-    return Task.delay(Seconds, Func)
+  delay = function(Seconds, Function)
+    return Task.delay(Seconds, Function)
+  end,
+  spawn = function(...)
+    return Task.spawn(...)
   end,
   require = function(Module)
     assert(Module, "No module provided")
@@ -155,9 +186,11 @@ local LCore = {
     if t == "Instance" then
       assert(Module:IsA("ModuleScript"), "Instance must be a ModuleScript")
       local success, ret = pcall(function()
-        local bytecode = Luau.compile(Module.Source)
-        local callableFn = Luau.load(bytecode, {
-          environment = getfenv(),
+        local Bytecode = Luau.compile(Module.Source)
+        local ECore, MT = require("../Sandbox"):Create()
+        
+        local callableFn = Luau.load(Bytecode, {
+          environment = setmetatable(ECore, MT),
           injectGlobals = true,
           codegenEnabled = true
         })

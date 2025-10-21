@@ -65,6 +65,8 @@ function Sandbox:Create()
   
   Registry.ECore = ECore
   
+  local Cache = {}
+  
   local MT = {
     __index = function(_, Key)
       local Value
@@ -98,7 +100,11 @@ function Sandbox:Create()
         return ECore
       end
       
-      print("[VM]: Missing", Key)
+      if Cache[Key] ~= true then
+        print("[VM]: Missing", Key)
+      end
+      Cache[Key] = true
+      
       return nil
     end,
     __newindex = function(_, Key, Value)

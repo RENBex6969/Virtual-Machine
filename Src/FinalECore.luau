@@ -15,7 +15,25 @@ return (function(ECore, LCore, Game, Registry)
     return LCore
   end
   
+  local FuncHooks = {}
+  
+  ECore.CALL = function(Func, ...)
+    if not Func then 
+      return 
+    end
+    
+    local hook = FuncHooks[Func]
+    if hook then
+      return hook(...)
+    else
+      return Func(...)
+    end
+  end
+
   ECore.hookfunction = function(Old, New)
+    local Copy = function(...)
+      return Old(...)
+    end
     for Key, Value in pairs(ECore) do
       if Value == Old then
         ECore[Key] = New
@@ -37,9 +55,9 @@ return (function(ECore, LCore, Game, Registry)
       end
     end
     
-    local Copy = Old
-    Old = New
-    
+    pcall(function()
+      FuncHooks[Old] = New
+    end)
     
     return Copy
   end
@@ -51,6 +69,10 @@ return (function(ECore, LCore, Game, Registry)
   
   ECore.replaceclosure = function(...)
     return ECore.hookfunction(...)
+  end
+  
+  ECore.restorefunction = function(...)
+    print({...})
   end
   
   ECore.setsimulationradius = function(Simulation, MaxSimulation)
