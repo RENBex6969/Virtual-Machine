@@ -23,7 +23,8 @@ local LCore = {
     return print("[WARN]:", ...)
   end,
   error = function(Message, Stack)
-    assert(type(Message) == "string", 'Invalid argument #1 to "error", string expected, but got ' .. type(Message))
+    assert(Message , 'Invalid argument #1 to "error", argument expected, but got nil')
+    
     if not type(Stack) == nil then
       assert(type(Level) == "number", 'Invalid argument #2 to "error", number expected, but got ' .. type(Level))
     end
@@ -35,6 +36,7 @@ local LCore = {
     
     local Arguments = {...}
     local Results = {pcall(Function, ...)}
+    
     local Error = Results[2]
     if not Results[1] and type(Error) == "string" and string.find(Error, "attempt to perform arithmetic") then
       local Line = Error:sub(1, Error:find(":(%d*):")) .. "1:"
@@ -53,17 +55,8 @@ local LCore = {
       print("[VM - System ]: Bypassing (Prometheus / Forks) line check")
       return false, Metatable
     end
-    if Results[1] == false then
-      pcall(function()
-        Results[2] = Results[2]:gsub(":%d+:",":1:")
-      end)
-    end
-    local Args = {table.unpack(Results)}
-    if type(Args[1]) == "userdata" then
-      Args[1] = tostring(Args[1])
-    end
     
-    return table.unpack(Args)
+    return table.unpack(Results)
   end,
   xpcall = function(Function, Debug, ...)
     assert(type(Function) == "function", 'Invalid argument #1 to "xpcall", function expected, but got ' .. type(Function))
@@ -72,7 +65,7 @@ local LCore = {
     return xpcall(Function, Debug, ...)
   end,
   tonumber = function(...)
-    print({...})
+    
     return tonumber(...)
   end,
   tostring = function(...)
