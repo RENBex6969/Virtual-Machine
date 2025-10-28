@@ -16,21 +16,14 @@ return (function(ECore, LCore, Game, Registry)
   end
   
   local FuncHooks = {}
+  local Org = {}
   
   ECore.CALL = function(Func, ...)
-    if not Func then 
-      return 
-    end
-    
-    local hook = FuncHooks[Func]
-    if hook then
-      return hook(...)
-    else
-      return Func(...)
-    end
+    return (FuncHooks[Func] or Func)(...)
   end
 
   ECore.hookfunction = function(Old, New)
+    --[[
     local Copy = function(...)
       return Old(...)
     end
@@ -54,12 +47,12 @@ return (function(ECore, LCore, Game, Registry)
         return Old
       end
     end
+    ]]
     
-    pcall(function()
-      FuncHooks[Old] = New
-    end)
+    FuncHooks[Old] = New
+    Org[New] = Old
     
-    return Copy
+    return ECore.clonefunction(Old)
   end
   
   
@@ -71,8 +64,11 @@ return (function(ECore, LCore, Game, Registry)
     return ECore.hookfunction(...)
   end
   
-  ECore.restorefunction = function(...)
-    print({...})
+  ECore.restorefunction = function(New)
+    local Old = Org[New]
+    if Old then
+      FuncHooks[New] = Old
+    end
   end
   
   ECore.setsimulationradius = function(Simulation, MaxSimulation)

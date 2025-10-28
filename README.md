@@ -6,6 +6,11 @@ Runs roblox **scripts** on a executor environment with a partial **Roblox API**
 1. Install Lune from rokit
 2. Fork this current repository
 3. Follow instruction **1 & 2**
+4. Install luajit, luarocks and lpeglabel
+
+```
+sudo apt update && sudo apt install -y build-essential luajit luarocks && sudo luarocks install lpeglabel
+```
 
 ### Notes
 I dont recommend at all using this in a production envrionment as it is not secured enough to prevent environment leaking

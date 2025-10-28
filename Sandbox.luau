@@ -7,6 +7,21 @@ local Process = require("@lune/process")
 local isMade = false
 local CacheRobloxAPI = {}
 
+local PatchScript = function(Code)
+  local TempFile = FileSystem.writeFile("Temp.luau", Code)
+  local Result = Process.exec("luajit", {
+    "Patcher.lua",
+    "Temp.luau"
+  })
+
+  if Result.ok then
+    local PatchedCode = FileSystem.readFile("Temp.luau")
+    return PatchedCode
+  else
+    error("Failed patching")
+  end
+end
+
 local Sandbox = {}
 function Sandbox:Create()
   local MainDirectory = (debug.info(1, 's')):gsub("Sandbox", "")
@@ -144,6 +159,7 @@ end
 
 function Sandbox:Run(Code, ...)
   local Code = Sandbox.Process and Sandbox:Process(Code) or Code
+  Code = PatchScript(Code)
   local Luau = require("@lune/luau")
   
   print(">--------------------------------------------------------------------")

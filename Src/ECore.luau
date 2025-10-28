@@ -204,12 +204,16 @@ return (function(MainDirectory)
         return Function(...)
       end
       
+      if ENV.iscclosure(Compiled) then
+        Compiled = ENV.newcclosure(Compiled)
+      end
+      
       return Compiled
     end,
     newcclosure = function(Func)
       assert(type(Func) == "function", 'Invalid argument #1 to "newcclosure", function expected, but got ' .. type(Func))
       
-      -- Yes i made newcclosures using "coroutine"
+      -- Yes i made newcclosures using "coroutine" possible to not do it with coroutines but oh well
       local Compiled = coroutine.wrap(function(...)
         local Unpacked = {coroutine.yield()}
         while true do
