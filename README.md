@@ -30,6 +30,7 @@ Sandbox:Run([[
   print("hello world")
   getrenv().print("hii")
   hookfunction(print, warn)
+  
   print("Woa")
 ]])
 ```
@@ -59,14 +60,16 @@ Making the sandbox more modular for better implementation of features
 
 1. HttpService - Full
 2. DebrisService - Full
-3. GroupService = Full
-4. TextService = Full
+3. GroupService - Full
+4. TextService - Full
+
 5. PlayersService - Partial
 6. RbxAnalyticsService - Partial
 7. UserInputService - Partial
 8. TeleportService - Partial
 9. RunService - Partial
-10. SoundService = Partial
+10. SoundService - Partial
+11. MarketplaceService - Partial
 
 1. CorePackages - Partial
 2. Lightning - Full

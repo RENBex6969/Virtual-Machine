@@ -722,6 +722,7 @@ return (function(MainDirectory)
         script = "Script"
       }, {
         __index = function(_, Key)
+          print(Key, 0)
           return ENV[Key]
         end
       })

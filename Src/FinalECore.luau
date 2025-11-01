@@ -19,6 +19,7 @@ return (function(ECore, LCore, Game, Registry)
   local Org = {}
   
   ECore.CALL = function(Func, ...)
+    print(Func)
     return (FuncHooks[Func] or Func)(...)
   end
 

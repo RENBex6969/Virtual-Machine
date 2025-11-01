@@ -159,7 +159,7 @@ end
 
 function Sandbox:Run(Code, ...)
   local Code = Sandbox.Process and Sandbox:Process(Code) or Code
-  Code = PatchScript(Code)
+  --Code = PatchScript(Code)
   local Luau = require("@lune/luau")
   
   print(">--------------------------------------------------------------------")
@@ -187,10 +187,13 @@ function Sandbox:Run(Code, ...)
       return nil, tostring(Bytecode)
     end
     
+    local ECore, MT, Registry = Sandbox:Create()
+    local Compiled = setmetatable(ECore, MT)
+    
     local IsOk2, callableFn = pcall(function()
       return Luau.load(Bytecode, {
         debugName = string.format(chunkName),
-        environment = setmetatable(table.unpack({require("./Sandbox"):Create()})),
+        environment = setmetatable(Compiled, MT),
         injectGlobals = false,
       })
     end)
@@ -219,10 +222,12 @@ function Sandbox:Run(Code, ...)
       return nil, tostring(Bytecode)
     end
     
+    local ECore, MT = require("./Sandbox"):Create()
+    
     local IsOk2, callableFn = pcall(function()
       return Luau.load(Bytecode, {
         debugName = string.format(chunkName),
-        environment = setmetatable(table.unpack({require("./Sandbox"):Create()})),
+        environment = setmetatable(ECore, MT),
         injectGlobals = false,
       })
     end)
@@ -251,10 +256,12 @@ function Sandbox:Run(Code, ...)
       return nil, tostring(Bytecode)
     end
     
+    local ECore, MT = require("./Sandbox"):Create()
+    
     local IsOk2, callableFn = pcall(function()
       return Luau.load(Bytecode, {
         debugName = string.format(chunkName),
-        environment = setmetatable(table.unpack({require("./Sandbox"):Create()})),
+        environment = setmetatable(ECore, MT),
         injectGlobals = false,
       })
     end)

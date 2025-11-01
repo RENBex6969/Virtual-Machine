@@ -9,6 +9,8 @@ local FileSystem = require("@lune/fs")
 
 local Game = Roblox.Instance.new("DataModel")
 Game.PlaceId = 0
+Game.JobId = ""
+
 Registry.Roblox = Roblox
 Registry.ConnectionsMap = {}
 
@@ -51,9 +53,11 @@ local DebrisMethods = require("./Game/DebrisService/Methods")(Roblox)
 --local TeleportProperties = require("./Game/TeleportService/Properties")(Roblox)
 local TeleportMethods = require("./Game/TeleportService/Methods")(Roblox)
 
-
 --local GroupProperties = require("./Game/GroupService/Properties")(Roblox)
 local GroupMethod = require("./Game/GroupService/Methods")(Roblox)
+
+--local MarketProperties = require("./Game/MarketplaceService/Properties")(Roblox)
+local MarketMethods = require("./Game/MarketplaceService/Methods")(Roblox)
 
 
 local SoundProperties = require("./Game/SoundService/Properties")(Roblox)
