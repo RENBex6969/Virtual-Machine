@@ -2,6 +2,9 @@
 # VM
 Runs roblox **scripts** on a executor environment with a partial **Roblox API**
 
+## Deprecated
+This project is deprecated please use [ExecVM](https://github.com/RENBex6969/ExecVM/tree/dev)
+
 ### Installation
 1. Install Lune from rokit
 2. Fork this current repository
