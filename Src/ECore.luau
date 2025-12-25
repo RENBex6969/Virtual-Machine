@@ -2,6 +2,7 @@ return (function(MainDirectory)
   local WrapDirectory = function(Path)
     return MainDirectory .. Path
   end
+  
   local Registry = require("@Dep/Registry")
   local Debugger = require("@Dep/Debugger")
   local Utility = require("@Dep/Utility")
@@ -16,7 +17,7 @@ return (function(MainDirectory)
   local WebSocket = getLibrary("WebSocket")
   local RConsole = getLibrary("Rconsole")
   local Console = getLibrary("Console")
-  local Drawing = getLibrary("Drawing")(Utility)
+  local Drawing = getLibrary("Drawing")
   local Mouse = getLibrary("Mouse")
   local Getrawmetatable = getLibrary("Getrawmetatables")
   
@@ -618,16 +619,14 @@ return (function(MainDirectory)
       assert(type(Obj) == "userdata", 'Invalid argument #1 to "isrenderobj", userdata expected, but got ' .. typeof(Obj))
       
       for _, Object in pairs(Registry.DrawingCache) do
-        if Object.proxy == Obj then
+        if Object == Obj then
           return true
         end
       end
+      
       return false
     end,
     cleardrawcache = function()
-      for _, Object in next, Registry.DrawingCache do
-        Object.instance:Destroy()
-      end
       
       DrawingCache = {}
     end,

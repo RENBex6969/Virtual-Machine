@@ -26,6 +26,7 @@ local Registry = {
   FFlags = {},
   SecuredInstances = {},
   ReadonlyTables = {},
+  DrawingCache = {},
   HWID = "f3b9c1a2-7d8e-4f5b-9a2c-1d3e4f6b7c8d"
 }
 
