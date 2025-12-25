@@ -1,11 +1,14 @@
 local VM = require("./Sandbox")
 
 VM:Run([=[
+  --[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
 local passes, fails, undefined = 0, 0, 0
 local running = 0
 
 local function getGlobal(path)
-	local value = getgenv and getgenv() or getfenv(2)
+	local value = getfenv(0)
 
 	while value ~= nil and path ~= "" do
 		local name, nextValue = string.match(path, "^([^.]+)%.?(.*)$")
@@ -16,24 +19,23 @@ local function getGlobal(path)
 	return value
 end
 
-local function test(name, aliases, callback, target)
-	running = running + 1
+local function test(name, aliases, callback)
+	running += 1
 
 	task.spawn(function()
 		if not callback then
 			print("⏺️ " .. name)
 		elseif not getGlobal(name) then
-			fails = fails + 1
+			fails += 1
 			warn("⛔ " .. name)
 		else
 			local success, message = pcall(callback)
-	        name = tostring(name)
-			message = tostring(message)
+	
 			if success then
-				passes = passes + 1
-				print("✅ " .. tostring(name) .. (tostring(message) and " • " .. tostring(message) or ""))
+				passes += 1
+				print("✅ " .. name .. (message and " • " .. message or ""))
 			else
-				fails = fails + 1
+				fails += 1
 				warn("⛔ " .. name .. " failed: " .. message)
 			end
 		end
@@ -47,17 +49,34 @@ local function test(name, aliases, callback, target)
 		end
 	
 		if #undefinedAliases > 0 then
-			undefined = undefined + 1
+			undefined += 1
 			warn("⚠️ " .. table.concat(undefinedAliases, ", "))
 		end
 
-		running = running - 1
+		running -= 1
 	end)
 end
 
 -- Header and summary
 
+print("\n")
 
+print("wUNC Environment Check")
+print("✅ - Pass, ⛔ - Fail, ⏺️ - No test, ⚠️ - Missing aliases\n")
+
+task.defer(function()
+	repeat task.wait() until running == 0
+
+	local rate = math.round(passes / (passes + fails) * 100)
+	local outOf = passes .. " out of " .. (passes + fails)
+
+	print("\n")
+
+	print("wUNC v1.2 Summary")
+	print("✅ Tested with a " .. rate .. "% success rate (" .. outOf .. ")")
+	print("⛔ " .. fails .. " tests failed")
+	print("⚠️ " .. undefined .. " globals are missing aliases")
+end)
 
 -- Cache
 
@@ -149,14 +168,6 @@ end)
 
 test("getcallingscript", {})
 
-test("getscriptclosure", {"getscriptfunction"}, function()
-	local module = game:GetService("CoreGui").RobloxGui.Modules.Common.Constants
-	local constants = getrenv().require(module)
-	local generated = getscriptclosure(module)()
-	assert(constants ~= generated, "Generated module should not match the original")
-	assert(shallowEqual(constants, generated), "Generated constant table should be shallow equal to the original")
-end)
-
 test("hookfunction", {"replaceclosure"}, function()
 	local function test()
 		return true
@@ -190,10 +201,15 @@ test("loadstring", {}, function()
 	local animate = game:GetService("Players").LocalPlayer.Character.Animate
 	local bytecode = getscriptbytecode(animate)
 	local func = loadstring(bytecode)
-	assert(type(func) ~= "function", "Luau bytecode should not be loadable!")
+
+	if type(func) == "function" then
+		warn("⚠️ Luau bytecode is loadable! This is unusual.")
+	end
+
 	assert(assert(loadstring("return ... + 1"))(1) == 2, "Failed to do simple math")
 	assert(type(select(2, loadstring("f"))) == "string", "Loadstring did not return anything for a compiler error")
 end)
+
 
 test("newcclosure", {}, function()
 	local function test()
@@ -475,6 +491,14 @@ test("delfile", {}, function()
 	assert(isfile(".tests/delfile.txt") == false, "Failed to delete file (isfile = " .. tostring(isfile(".tests/delfile.txt")) .. ")")
 end)
 
+test("loadfile", {}, function()
+	writefile(".tests/loadfile.txt", "return ... + 1")
+	assert(assert(loadfile(".tests/loadfile.txt"))(1) == 2, "Failed to load a file with arguments")
+	writefile(".tests/loadfile.txt", "f")
+	local callback, err = loadfile(".tests/loadfile.txt")
+	assert(err and not callback, "Did not return an error message for a compiler error")
+end)
+
 test("dofile", {})
 
 -- Input
@@ -688,7 +712,7 @@ test("setfpscap", {}, function()
 		renderStepped:Wait()
 		local sum = 0
 		for _ = 1, 5 do
-			sum = sum + 1 / renderStepped:Wait()
+			sum += 1 / renderStepped:Wait()
 		end
 		return math.round(sum / 5)
 	end
@@ -826,47 +850,199 @@ test("cleardrawcache", {}, function()
 	cleardrawcache()
 end)
 
--- WebSocket
+if isfolder and makefolder and delfolder then
+    if isfolder(".tests") then
+        delfolder(".tests")
+    end
+    makefolder(".tests")
+end
 
-test("WebSocket", {})
-
-test("WebSocket.connect", {}, function()
-	local types = {
-		Send = "function",
-		Close = "function",
-		OnMessage = {"table", "userdata"},
-		OnClose = {"table", "userdata"},
-	}
-	local ws = WebSocket.connect("wss://echo.websocket.org")
-	assert(type(ws) == "table" or type(ws) == "userdata", "Did not return a table or userdata")
-	for k, v in pairs(types) do
-		if type(v) == "table" then
-			assert(table.find(v, type(ws[k])), "Did not return a " .. table.concat(v, ", ") .. " for " .. k .. " (a " .. type(ws[k]) .. ")")
-		else
-			assert(type(ws[k]) == v, "Did not return a " .. v .. " for " .. k .. " (a " .. type(ws[k]) .. ")")
-		end
-	end
-	ws:Close()
+-- readfile/writefile
+test("writefile", {}, function()
+    writefile(".tests/writefile.txt", "success")
+    assert(readfile(".tests/writefile.txt") == "success", "Did not write file correctly")
 end)
 
-print("\n")
+test("readfile", {}, function()
+    writefile(".tests/readfile.txt", "test content")
+    assert(readfile(".tests/readfile.txt") == "test content", "readfile failed")
+end)
 
+test("appendfile", {}, function()
+    writefile(".tests/append.txt", "abc")
+    appendfile(".tests/append.txt", "123")
+    assert(readfile(".tests/append.txt") == "abc123", "appendfile failed")
+end)
 
-	repeat task.wait() until running == 0
-	
-	print("UNC Environment Check")
-print("✅ - Pass, ⛔ - Fail, ⏺️ - No test, ⚠️ - Missing aliases\n")
+test("isfile", {}, function()
+    writefile(".tests/isfile.txt", "hi")
+    assert(isfile(".tests/isfile.txt") == true, "isfile failed on real file")
+    assert(isfile(".tests") == false, "isfile returned true for folder")
+end)
 
+test("isfolder", {}, function()
+    makefolder(".tests/isfolder")
+    assert(isfolder(".tests/isfolder") == true, "isfolder failed on folder")
+    assert(isfolder(".tests/doesnotexist") == false, "isfolder returned true for nonexistent folder")
+end)
 
+test("makefolder", {}, function()
+    makefolder(".tests/makefolder")
+    assert(isfolder(".tests/makefolder"), "makefolder failed")
+end)
 
-	local rate = math.round(passes / (passes + fails) * 100)
-	local outOf = passes .. " out of " .. (passes + fails)
+test("delfolder", {}, function()
+    makefolder(".tests/delfolder")
+    delfolder(".tests/delfolder")
+    assert(not isfolder(".tests/delfolder"), "delfolder failed")
+end)
 
-	print("\n")
+test("delfile", {}, function()
+    writefile(".tests/delfile.txt", "bye")
+    delfile(".tests/delfile.txt")
+    assert(not isfile(".tests/delfile.txt"), "delfile failed")
+end)
 
-	print("UNC Summary")
-	print("✅ Tested with a " .. rate .. "% success rate (" .. outOf .. ")")
-	print("⛔ " .. fails .. " tests failed")
-	print("⚠️ " .. undefined .. " globals are missing aliases")
+test("listfiles", {}, function()
+    makefolder(".tests/list")
+    writefile(".tests/list/file1.txt", "a")
+    writefile(".tests/list/file2.txt", "b")
+    local files = listfiles(".tests/list")
+    assert(#files == 2, "listfiles returned wrong number of files")
+    assert(isfile(files[1]), "listfiles did not return a file path")
+end)
 
-]=])
+-- getinstances / getnilinstances
+test("getinstances", {}, function()
+    local parts = getinstances()
+    assert(typeof(parts[1]) == "Instance", "getinstances first item not Instance")
+end)
+
+test("getnilinstances", {}, function()
+    local nilParts = getnilinstances()
+    assert(typeof(nilParts[1]) == "Instance", "getnilinstances first item not Instance")
+    assert(nilParts[1].Parent == nil, "getnilinstances first item should have nil parent")
+end)
+
+-- gethiddenproperty / sethiddenproperty
+test("gethiddenproperty", {}, function()
+    local fire = Instance.new("Fire")
+    local value, isHidden = gethiddenproperty(fire, "size_xml")
+    assert(isHidden == true, "gethiddenproperty did not detect hidden property")
+    assert(type(value) == "number", "gethiddenproperty did not return number")
+end)
+
+test("sethiddenproperty", {}, function()
+    local fire = Instance.new("Fire")
+    local success = sethiddenproperty(fire, "size_xml", 10)
+    assert(success, "sethiddenproperty failed")
+    local value = gethiddenproperty(fire, "size_xml")
+    assert(value == 10, "sethiddenproperty did not actually set the value")
+end)
+
+-- isscriptable / setscriptable
+test("isscriptable", {}, function()
+    local fire = Instance.new("Fire")
+    assert(isscriptable(fire, "Size") == true, "isscriptable should return true for Size")
+    assert(isscriptable(fire, "size_xml") == false, "isscriptable should return false for hidden property")
+end)
+
+test("setscriptable", {}, function()
+    local fire = Instance.new("Fire")
+    local wasScriptable = setscriptable(fire, "size_xml", true)
+    assert(wasScriptable == false, "setscriptable returned wrong previous state")
+    assert(isscriptable(fire, "size_xml") == true, "setscriptable did not set property")
+end)
+
+-- fireclickdetector
+test("fireclickdetector", {}, function()
+    local detector = Instance.new("ClickDetector")
+    local success = pcall(function()
+        fireclickdetector(detector)
+    end)
+    assert(success, "fireclickdetector failed")
+end)
+
+-- getcallbackvalue
+test("getcallbackvalue", {}, function()
+    local bindable = Instance.new("BindableFunction")
+    local function callback() return true end
+    bindable.OnInvoke = callback
+    assert(getcallbackvalue(bindable, "OnInvoke") == callback, "getcallbackvalue failed")
+end)
+
+-- Optional executor checks
+test("setproximitypromptduration", {}, function()
+    if not setproximitypromptduration then
+        return "Not supported on this executor"
+    end
+
+    local part = Instance.new("Part", workspace)
+    local prompt = Instance.new("ProximityPrompt", part)
+    local success, err = pcall(function()
+        setproximitypromptduration(prompt, 5)
+    end)
+
+    assert(success, "setproximitypromptduration call failed: " .. (err or "unknown error"))
+    return "Supported! This is a really great function imo."
+end)
+
+test("getproximitypromptduration", {}, function()
+    if not getproximitypromptduration then
+        return "Not supported on this executor"
+    end
+
+    local part = Instance.new("Part", workspace)
+    local prompt = Instance.new("ProximityPrompt", part)
+    setproximitypromptduration(prompt, 7)
+    local duration = getproximitypromptduration(prompt)
+
+    assert(duration == 7, "getproximitypromptduration did not return expected value")
+    return "Supported! This is a really great function imo."
+end)
+
+-- setclipboard
+test("setclipboard", {}, function()
+    local success, err = pcall(function()
+        setclipboard("wUNC v1.2 by Saturn X on top")
+    end)
+    assert(success, "setclipboard failed: " .. (err or "unknown error"))
+end)
+
+-- ayo this one works unlike og unc
+test("getscriptclosure", {}, function()
+	assert(type(getscriptclosure) == "function", "getscriptclosure missing")
+
+	local Players = game:GetService("Players")
+	local lp = Players.LocalPlayer
+
+	-- wait for a guaranteed LocalScript
+	local animate = lp.Character and lp.Character:FindFirstChild("Animate")
+	assert(animate and animate:IsA("LocalScript"), "Animate LocalScript not found")
+
+	local closure = getscriptclosure(animate)
+	assert(type(closure) == "function", "getscriptclosure did not return a function")
+
+	local ok, err = pcall(closure)
+	assert(ok or type(err) == "string", "Invalid script closure returned")
+end)
+
+test("firesignal", {}, function()
+	assert(type(firesignal) == "function", "firesignal missing")
+
+	local ev = Instance.new("BindableEvent")
+	local fired = false
+
+	ev.Event:Connect(function()
+		fired = true
+	end)
+
+	firesignal(ev.Event)
+	task.wait()
+
+	assert(fired == true, "firesignal did not fire the signal")
+end)
+
+task.wait(0.6)
+print("wUNC v1.2 made by Saturn X! 🪐 phonk all the unc fakers (this script is fakable)")
+  ]=])

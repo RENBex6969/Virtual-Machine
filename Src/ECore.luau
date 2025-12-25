@@ -129,6 +129,12 @@ return (function(MainDirectory)
       
       return nil, false
     end,
+    setproximitypromptduration = function(Prompt, Duration)
+      Prompt.HoldDuration = Duration
+    end,
+    getproximitypromptduration = function(Prompt)
+      return Prompt.HoldDuration
+    end,
     isexecutorclosure = function(Func)
       assert(type(Func) == "function", 'Invalid argument #1 to "isexecutorclosure", function expected, but got ' .. type(Func))
       
@@ -712,21 +718,6 @@ return (function(MainDirectory)
         __newindex = function(_, Key, Value)
           rawset(Registry.GlobalVariables, Key, Value)
           rawset(ENV, Key, Value)
-        end
-      })
-    end,
-    getfenv = function(Args)
-      if type(Args) == "number" then
-        return getfenv(2 + (Args or 0))
-      end
-      local ECore, MT = require("../Sandbox"):Create()
-      local ENV = setmetatable(ECore, MT)
-      return setmetatable({
-        script = "Script"
-      }, {
-        __index = function(_, Key)
-          print(Key, 0)
-          return ENV[Key]
         end
       })
     end,

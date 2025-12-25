@@ -161,6 +161,17 @@ function Sandbox:Create()
     end,
   }
   
+  LCore.getfenv = function()
+    local ENV = setmetatable(ECore, MT)
+    return setmetatable({
+      script = "Script"
+    }, {
+      __index = function(_, Key)
+        return ENV[Key]
+      end
+    })
+  end
+  
   return ECore, MT, Registry
 end
 
@@ -215,12 +226,14 @@ function Sandbox:Run(Code, ...)
   
   local Count2 = 0
   rawset(ECore, "loadfile", function(Path)
-    assert(type(chunkName) == "string", 'Invalid argument #2 to "loadfile", string expected, but got ' .. type(code))
+    assert(type(Path) == "string", 'Invalid argument #1 to "loadfile", string expected, but got ' .. type(Path))
     
     chunkName = chunkName or "[VM - Loadfile]: " .. Count
     Count2 = Count2 + 1
     local IsOk, Bytecode = pcall(function()
-      return Luau.compile(ECore.readfile(Path), {
+      local Code = HookOp(ECore.readfile(Path))
+      
+      return Luau.compile(Code, {
         optimizationLevel = 0,
         coverageLevel = 0,
         debugLevel = 2
