@@ -610,6 +610,7 @@ return (function(MainDirectory)
     end,
     isrenderobj = function(Obj)
       assert(type(Obj) == "userdata", 'Invalid argument #1 to "isrenderobj", userdata expected, but got ' .. typeof(Obj))
+      
       for _, Object in pairs(Registry.DrawingCache) do
         if Object.proxy == Obj then
           return true
@@ -621,10 +622,12 @@ return (function(MainDirectory)
       for _, Object in next, Registry.DrawingCache do
         Object.instance:Destroy()
       end
+      
       DrawingCache = {}
     end,
     getrenderproperty = function(Object, Value)
       assert(ENV.isrenderobj(Object), 'Invalid argument #1 to "getrenderproperty", render object expected, but got ' .. typeof(Object))
+      
       return Object[Value]
     end,
     setrenderproperty = function(Object, Index, Data)

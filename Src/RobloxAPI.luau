@@ -1,7 +1,7 @@
 return (function(Roblox, CachedInstances, Registry, Game)
   local Task = require("@lune/task")
   local Signal = require("./ExploitLibrary/Signal")
-  local Spy = require("../Spy")
+  
   Registry.CallbackStorage = {}
   local CallbackStorage = Registry.CallbackStorage
 

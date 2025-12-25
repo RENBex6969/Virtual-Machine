@@ -6,11 +6,7 @@ Runs roblox **scripts** on a executor environment with a partial **Roblox API**
 1. Install Lune from rokit
 2. Fork this current repository
 3. Follow instruction **1 & 2**
-4. Install luajit, luarocks and lpeglabel
-
-```
-sudo apt update && sudo apt install -y build-essential luajit luarocks && sudo luarocks install lpeglabel
-```
+4. Install lute version 2025.1115
 
 ### Notes
 I dont recommend at all using this in a production envrionment as it is not secured enough to prevent environment leaking
@@ -38,15 +34,13 @@ Sandbox:Run([[
 ### UNC / Unified Naming Convention
 Running the latest sUNC test is impossible due to software incompatibility and as the script communicates with the testing place
 
-1. Has an **96%** score on the UNC test
-2. Has an **90%** score on the sUNC test (Public August 2024 Version)
+1. Has an **98%** score on the UNC test
+2. Has an **91%** score on the sUNC test (Public August 2024 Version)
 
 ### Not to Implement
+
 1. **Fully working debug Library** :
 Full debug library is impossible since luau does not supply the full debug library like lua instead it is faked to trick some scripts using the UNC (deprecated) to ensure a function is working
-
-2. **Hookfunction - Implemented** : 
-Hookfunction is implememted but requires an extra step which is very hard (Todo)
 
 ### TODO :
 

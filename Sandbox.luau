@@ -3,23 +3,56 @@ local Core = require("@Src/Core")
 local Task = require("@lune/task")
 local FileSystem = require("@lune/fs")
 local Process = require("@lune/process")
+local Random = require("@Dep/Random")
 
 local isMade = false
 local CacheRobloxAPI = {}
 
-local PatchScript = function(Code)
-  local TempFile = FileSystem.writeFile("Temp.luau", Code)
-  local Result = Process.exec("luajit", {
-    "Patcher.lua",
-    "Temp.luau"
+local Result = Process.exec("lute", { "--version" })
+assert(Result.ok, "Error occured whilst checking Lute. Did you install lute? (== 2025.1115)")
+  
+local Version = Result.stdout:gsub("%s+$", ""):sub(-4)
+assert(Version == "1115", "Version mismatched expected Lute version 2025.1115 but got 2025." .. Version)
+
+local HookOp = function( Source : string ): string
+  local InputPath = Random:filename(16, ".luau", "./Src/Temp")
+  local OutputPath = Random:filename(16, ".luau", "./Src/Temp")
+  
+  FileSystem.writeFile(InputPath, Source)
+  
+  local Result = Process.exec("lute", { "run", "./Dependency/Hookop", "--with-luaurc" }, { 
+    env = { InputPath = InputPath, OutputPath = OutputPath },
+    cwd = "./"
   })
 
-  if Result.ok then
-    local PatchedCode = FileSystem.readFile("Temp.luau")
-    return PatchedCode
-  else
-    error("Failed patching")
+  FileSystem.removeFile(InputPath)
+  
+  local Out; if Result.ok then
+    assert(FileSystem.isFile(OutputPath), "[HOOKOP]: Designated output path is not found!")
+    
+    Out = FileSystem.readFile(OutputPath)
+    FileSystem.removeFile(OutputPath)
   end
+  
+  --[[
+  print(Result.stdout, Result.stderr)
+  assert(Result.ok, "[HOOKOP]: Error occured whilst patching script!")
+  
+  local CPUTime, SizeKB = Result.stdout:match("([%d%.]+), %s*([%d%.]+)")
+  assert(CPUTime or SizeKB, "[HOOKOP]: Did not return any info! possible error.")
+  
+  CPUTime, SizeKB = tonumber(CPUTime), tonumber(SizeKB)
+  
+  if CPUTime < 1 then
+    print(string.format("[HOOKOP]: %.2f ms ", CPUTime * 1000))
+  else
+    print(string.format("[HOOKOP]: %.2f s ", CPUTime))
+  end
+  
+  print(string.format("[HOOKOP]: Old %.2f KB / New %.2f KB", #Source / 1024, SizeKB))
+  ]]
+
+  return Out
 end
 
 local Sandbox = {}
@@ -118,6 +151,7 @@ function Sandbox:Create()
       if Cache[Key] ~= true then
         print("[VM]: Missing", Key)
       end
+      
       Cache[Key] = true
       
       return nil
@@ -130,36 +164,10 @@ function Sandbox:Create()
   return ECore, MT, Registry
 end
 
---[[
-function Sandbox:Process(Code)
-  local tempIn = "temp_input.luau"
-  local tempOut = "temp_output.luau"
-
-  FileSystem.writeFile(tempIn, Code)
-
-  local step1 = Process.exec("darklua", {
-    "process",
-    tempIn,
-    tempOut,
-    "-c",
-    "config.json",
-  })
-
-  if not step1.ok then
-    error("darklua failed:\n" .. step1.stderr)
-  end
-
-  local processed = FileSystem.readFile(tempOut)
-  FileSystem.removeFile(tempIn)
-  FileSystem.removeFile(tempOut)
-
-  return processed
-end
-]]
-
 function Sandbox:Run(Code, ...)
   local Code = Sandbox.Process and Sandbox:Process(Code) or Code
-  --Code = PatchScript(Code)
+  Code = HookOp(Code)
+  
   local Luau = require("@lune/luau")
   
   print(">--------------------------------------------------------------------")
@@ -173,6 +181,7 @@ function Sandbox:Run(Code, ...)
   local Count = 0
   rawset(ECore, "loadstring", function(code, chunkName)
     assert(type(code) == "string", 'Invalid argument #1 to "loadstring", string expected, but got ' .. type(code))
+    code = HookOp(code)
     
     chunkName = chunkName or "[VM - Loadstring]: " .. Count
     Count = Count + 1
@@ -206,7 +215,6 @@ function Sandbox:Run(Code, ...)
   
   local Count2 = 0
   rawset(ECore, "loadfile", function(Path)
-    assert(type(code) == "string", 'Invalid argument #1 to "loadfile", string expected, but got ' .. type(code))
     assert(type(chunkName) == "string", 'Invalid argument #2 to "loadfile", string expected, but got ' .. type(code))
     
     chunkName = chunkName or "[VM - Loadfile]: " .. Count
@@ -242,6 +250,7 @@ function Sandbox:Run(Code, ...)
   local Count3 = 0
   rawset(ECore, "load", function(code, chunkName)
     assert(type(code) == "string", 'Invalid argument #1 to "load", string expected, but got ' .. type(code))
+    code = HookOp(code)
     
     chunkName = chunkName or "[VM - LOAD]: " .. Count
     Count3 = Count3 + 1

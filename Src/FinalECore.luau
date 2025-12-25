@@ -15,47 +15,59 @@ return (function(ECore, LCore, Game, Registry)
     return LCore
   end
   
+  local Functions = {}
+  local Functionsids = {}
   local FuncHooks = {}
   local Org = {}
   
   ECore.CALL = function(Func, ...)
-    print(Func)
     return (FuncHooks[Func] or Func)(...)
+  end
+  
+  ECore.NAMECALL = function(Table, Index, Table, ...)
+    local Function = Table[Index]
+    
+    return (FuncHooks[Function] or Function)(Table, ...)
+  end
+  
+  ECore.FUNC = function(fn, id)
+    Functions[id] = { 
+      hooks = {}
+    }
+    
+    Functionsids[fn] = id
+    
+    return fn
+  end
+
+  ECore.UPVALUE = function(ref, funcid, upvalID)
+  local Info = Functions[funcid]
+  
+  if Info then
+    if Info.hooks[upvalID] then
+      return Info.hooks[upvalID]
+    end
+  end
+  
+  return ref
+end
+
+  ECore.debug.setupvalue = function(fn, upvalID, value)
+    local id = Functionsids[fn]
+    if id then
+      local info = Functions[id]
+      if info then
+        info.hooks[upvalID] = value
+      end
+    end
   end
 
   ECore.hookfunction = function(Old, New)
-    --[[
-    local Copy = function(...)
-      return Old(...)
-    end
-    for Key, Value in pairs(ECore) do
-      if Value == Old then
-        ECore[Key] = New
-        return Old
-      end
-    end
-    
-    for Key, Value in pairs(LCore) do
-      if Value == Old then
-        LCore[Key] = New
-        return Old
-      end
-    end
-    
-    for Key, Value in pairs(Registry.GlobalVariables) do
-      if Value == Old then
-        Registry.GlobalVariables[Key] = New
-        return Old
-      end
-    end
-    ]]
-    
     FuncHooks[Old] = New
     Org[New] = Old
     
     return ECore.clonefunction(Old)
   end
-  
   
   ECore.detourfunction = function(...)
     return ECore.hookfunction(...)
