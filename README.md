@@ -1,15 +1,18 @@
+# ⚡ VM
 
-# VM
-Runs roblox **scripts** on a executor environment with a partial **Roblox API**
+![version](https://img.shields.io/badge/version-pre--alpha--0.1-red?style=flat-square)
+![license](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+![status](https://img.shields.io/badge/status-in--development-yellow?style=flat-square)
+
+Runs Roblox **scripts** inside an executor-like environment with a **partial Roblox API** implementation.
+
+> ⚠️ **It is usable in a production environment, but proceed with caution.**  
+> The sandbox is not fully secured against environment leakage.
 
 ### Installation
-1. Install Lune from rokit
-2. Fork this current repository
-3. Follow instruction **1 & 2**
-4. Install lute version 2025.1115
-
-### Notes
-I dont recommend at all using this in a production envrionment as it is not secured enough to prevent environment leaking
+1. Install [Lune](https://lune-org.github.io/docs/getting-started/1-installation/)
+2. Install [Lute](https://github.com/luau-lang/lute/releases/tag/0.1.0-nightly.20251115) version **2025.1115**
+3. Fork this repository
 
 ### Usage
 The VM has bulit in API system you can use it on your scripts!
