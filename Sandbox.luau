@@ -3,6 +3,7 @@ local Core = require("@Src/Core")
 local Task = require("@lune/task")
 local FileSystem = require("@lune/fs")
 local Process = require("@lune/process")
+local Serde = require("@lune/serde")
 local Random = require("@Dep/Random")
 
 local isMade = false
@@ -14,7 +15,16 @@ assert(Result.ok, "Error occured whilst checking Lute. Did you install lute? (==
 local Version = Result.stdout:gsub("%s+$", ""):sub(-4)
 assert(Version == "1115", "Version mismatched expected Lute version 2025.1115 but got 2025." .. Version)
 
+assert(FileSystem.isFile("config.json"), "Default config.json is missing from the root directory!")
+local ConfigJSON = FileSystem.readFile("config.json")
+
+local Config = Serde.decode("json", ConfigJSON)
+
 local HookOp = function( Source : string ): string
+  if not Config.Script.HookOp then
+    return Source
+  end
+  
   local InputPath = Random:filename(16, ".luau", "./Src/Temp")
   local OutputPath = Random:filename(16, ".luau", "./Src/Temp")
   
@@ -34,8 +44,9 @@ local HookOp = function( Source : string ): string
     FileSystem.removeFile(OutputPath)
   end
   
+
+  --print(Result.stdout, Result.stderr)
   --[[
-  print(Result.stdout, Result.stderr)
   assert(Result.ok, "[HOOKOP]: Error occured whilst patching script!")
   
   local CPUTime, SizeKB = Result.stdout:match("([%d%.]+), %s*([%d%.]+)")
@@ -178,7 +189,7 @@ end
 function Sandbox:Run(Code, ...)
   local Code = Sandbox.Process and Sandbox:Process(Code) or Code
   Code = HookOp(Code)
-  
+  print(Code)
   local Luau = require("@lune/luau")
   
   print(">--------------------------------------------------------------------")

@@ -15,5 +15,8 @@
   },
   "FileSystem": {
     "MaxFileSize": "15728640"
+  },
+  "Script": {
+    "HookOp": true
   }
 }

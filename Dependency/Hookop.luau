@@ -22,7 +22,8 @@ local Id = 1
 local function PushFunctionScope()
   table.insert(FuncScopes, {
     ID = Id,
-    UpvalueId = 1
+    UpvalueId = 1,
+    ConstantId = 1
   })
   Id += 1
 end
@@ -287,6 +288,26 @@ function Unparser:readexpr(Stat, isValue, ...)
     return Beautify(Stat.text, Stat.quotestyle)
   end
   
+  --[[
+  if Stat.istoken and not Stat.tag then
+    local FuncScope = PeepFunctionScope()
+    if FuncScope then
+      local ValueStr = Stat.value ~= nil and Beautify(Stat.value, Stat.qoutestyle) or Beautify(Stat.text, Stat.quotestyle)
+      local Out = string.format("GETCONSTANT(%s, %d, %d)", ValueStr, FuncScope.ID, FuncScope.ConstantId)
+      
+      return Out
+    else
+      if Stat.value ~= nil then
+        return Beautify(Stat.value, Stat.qoutestyle)
+      end
+      
+      return Beautify(Stat.text, Stat.quotestyle)
+    end
+  end
+  ]]
+  
+  -- Constant
+  
   local Node = Stat.node
   if Node then
     Stat = Node
@@ -295,16 +316,35 @@ function Unparser:readexpr(Stat, isValue, ...)
   local Tag = Stat.tag or Stat.kind
   
 --  print(Tag)
+
+  if Tag == "string" or Tag == "nil" or Tag == "number" or Tag == "boolean" then
+    local FuncScope = PeepFunctionScope()
+    
+    local ValueStr
+    if Tag == "string" then
+      ValueStr = Beautify(Stat.text, Stat.quotestyle, Stat.blockdepth)
+    elseif Tag == "nil" then
+      ValueStr = "nil"
+    elseif Tag == "number" then
+      ValueStr = Stat.text or tostring(Stat.value)
+    elseif Tag == "boolean" then
+      ValueStr = tostring(Stat.value)
+    end
+    
+    if FuncScope then
+      local FuncID = FuncScope.ID
+      local ConstID = FuncScope.ConstantId
+      
+      local Out = string.format("GETCONSTANT(%s, %d, %d)", ValueStr, FuncID, ConstID)
+      FuncScope.ConstantId += 1
+      
+      return Out
+    end
+    
+    return ValueStr
+  end
   
-  if Tag == "string" then
-    return Beautify(Stat.text, Stat.quotestyle, Stat.blockdepth)
-  elseif Tag == "nil" then
-    return "nil"
-  elseif Tag == "number" then
-    return Stat.text or Stat.value
-  elseif Tag == "boolean" then
-    return tostring(Stat.value)
-  elseif Tag == "table" then
+  if Tag == "table" then
     local Out = "{"
     local Length = #Stat.entries
     

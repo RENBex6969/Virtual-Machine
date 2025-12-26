@@ -32,7 +32,8 @@ return (function(ECore, LCore, Game, Registry)
   
   ECore.FUNC = function(fn, id)
     Functions[id] = { 
-      hooks = {}
+      UpvalueHooks = {},
+      ConstantHooks = {}
     }
     
     Functionsids[fn] = id
@@ -41,23 +42,45 @@ return (function(ECore, LCore, Game, Registry)
   end
 
   ECore.UPVALUE = function(ref, funcid, upvalID)
-  local Info = Functions[funcid]
-  
-  if Info then
-    if Info.hooks[upvalID] then
-      return Info.hooks[upvalID]
+    local Info = Functions[funcid]
+    if Info then
+      if Info.UpvalueHooks[upvalID] then
+        return Info.UpvalueHooks[upvalID]
+      end
     end
+    
+    return ref
   end
   
-  return ref
-end
+  ECore.GETCONSTANT = function(Reference, FuncID, ConstantID)
+    local Info = Functions[FuncID]
+    if not Info then
+      return Reference
+    end
+    
+    if Info.ConstantHooks[ConstantID] then
+      return Info.ConstantHooks[ConstantID]
+    end
+    
+    return Reference
+  end
 
   ECore.debug.setupvalue = function(fn, upvalID, value)
     local id = Functionsids[fn]
     if id then
       local info = Functions[id]
       if info then
-        info.hooks[upvalID] = value
+        info.UpvalueHooks[upvalID] = value
+      end
+    end
+  end
+  
+  ECore.debug.setconstant = function(FN, ConstantID, Value)
+    local ID = Functionsids[FN]
+    if ID then
+      local Info = Functions[ID]
+      if Info then
+        Info.ConstantHooks[ConstantID] = Value
       end
     end
   end
