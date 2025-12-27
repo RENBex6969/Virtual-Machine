@@ -189,7 +189,7 @@ end
 function Sandbox:Run(Code, ...)
   local Code = Sandbox.Process and Sandbox:Process(Code) or Code
   Code = HookOp(Code)
-  print(Code)
+  --print(Code)
   local Luau = require("@lune/luau")
   
   print(">--------------------------------------------------------------------")

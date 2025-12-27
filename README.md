@@ -34,24 +34,15 @@ Sandbox:Run([[
 ]])
 ```
 
-### UNC / Unified Naming Convention
-Running the latest sUNC test is impossible due to software incompatibility and as the script communicates with the testing place
+## s/UNC Scores
 
-1. Has an **99%** score on the UNC test
-2. Has an **92%** score on the sUNC test (Public August 2024 Version)
+| Unified Naming Convention's | Score |
+|-----------|-------|
+| UNC       | **99%** |
+| sUNC      | **92%** |
 
-### Not to Implement
-
-1. **Fully working debug Library** :
-Full debug library is impossible since luau does not supply the full debug library like lua instead it is faked to trick some scripts using the UNC (deprecated) to ensure a function is working
-
-### TODO :
-
-1. **Optimizing**
-Optimizing because the compilation of the Game environment differs for most people (lune)
-
-2. **Modular**
-Making the sandbox more modular for better implementation of features
+## Missing
+Functions that are deemed useful and submitted for review will be added. Additionally, any functions defined in the **sUNC** [standard](https://docs.sunc.su/About/what-is-sunc/) will be implemented as part of future updates.
 
 ### Roblox 
 

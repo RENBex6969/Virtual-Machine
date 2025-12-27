@@ -34,46 +34,14 @@ return (function(MainDirectory)
   local SecureFolders = {}
   local LockedMT = {}
   
-  --[[
-    1. Some functions are impossible to implement so lite version are implemented
-  ]] 
-  
   local ENV; ENV = {
     lz4compress = Compression.LZ4.compress,
     lz4decompress = Compression.LZ4.decompress,
     lz4 = LZ4,
     request = Network.Request,
-    http = {
-      request = Network.Request
-    },
     http_request = Network.Request,
     HttpGet = Network.HttpGet,
     crypt = Crypt,
-    syn = {
-      request = Network.Request,
-      is_beta = function()
-        return true
-      end,
-      protect_gui = function(Instance)
-        ENV.protect_gui(Instance)
-      end,
-      unprotect_gui = function(Instance)
-        Instance.Parent = nil
-      end,
-      cache_invalidate = function(...)
-        return ENV.cache.invalidate(...)
-      end,
-      cache_replace = function(...)
-        return ENV.cache.replace(...)
-      end,
-      is_cached = function(...)
-        return ENV.cache.iscached(...)
-      end,
-      crypt = Crypt,
-    },
-    WebSocket = {
-      connect = WebSocket.connect
-    },
     base64 = Crypt.base64,
     base64_encode = Crypt.base64.encode,
     base64_decode = Crypt.base64.decode,
@@ -161,27 +129,6 @@ return (function(MainDirectory)
       assert(type(Func) == "function", 'Invalid argument #1 to "isourclosure", function expected, but got ' .. type(Func))
       return ENV.isexecutorclosure(Func)
     end,
-    cache = {
-      iscached = function(Obj)
-        assert(typeof(Obj) == "Instance", 'Invalid argument #1 to "cache.iscached", instance expected, but got ' .. typeof(Obj))
-        return Registry.CachedInstances[Obj] ~= 'invalid'
-      end,
-      invalidate = function(Obj)
-        assert(typeof(Obj) == "Instance", 'Invalid argument #1 to "cache.invalidate", instance expected, but got ' .. typeof(Obj))
-        pcall(function() 
-          Registry.CachedInstances[Obj] = 'invalid' 
-          Obj.Parent = nil
-        end)
-      end,
-      replace = function(Old, New)
-        assert(typeof(Old) == "Instance", 'Invalid argument #1 to "cache.replace", instance expected, but got ' .. typeof(Old))
-        assert(typeof(New) == "Instance", 'Invalid argument #2 to "cache.replace", instance expected, but got ' .. typeof(New))
-        Registry.CachedInstances[Old] = New
-        New.Name = Old.Name
-        New.Parent = Old.Parent
-        Old.Parent = nil
-      end
-    },
     isscriptable = function(Instance, Property)
       assert(typeof(Instance) == "Instance", 'Invalid argument #1 to "isscriptable", instance expected, but got ' .. typeof(Instance))
       assert(Property, 'Invalid argument #2 to "isscriptable", value expected, but got ' .. type(Property))
@@ -756,8 +703,62 @@ return (function(MainDirectory)
     _VERSION = "Luau"
   }
   
+  ENV.http = {
+    request = Network.Request
+  }
+
+  ENV.syn = {
+    request = Network.Request,
+    is_beta = function()
+      return true
+    end,
+    protect_gui = function(Instance)
+      ENV.protect_gui(Instance)
+    end,
+    unprotect_gui = function(Instance)
+      Instance.Parent = nil
+    end,
+    cache_invalidate = function(...)
+      return ENV.cache.invalidate(...)
+    end,
+    cache_replace = function(...)
+      return ENV.cache.replace(...)
+    end,
+    is_cached = function(...)
+      return ENV.cache.iscached(...)
+    end,
+    crypt = Crypt,
+  }
+  
+  ENV.WebSocket = {
+    connect = WebSocket.connect
+  }
+  
+  ENV.cache = {
+    iscached = function(Obj)
+      assert(typeof(Obj) == "Instance", 'Invalid argument #1 to "cache.iscached", instance expected, but got ' .. typeof(Obj))
+      return Registry.CachedInstances[Obj] ~= 'invalid'
+    end,
+    invalidate = function(Obj)
+      assert(typeof(Obj) == "Instance", 'Invalid argument #1 to "cache.invalidate", instance expected, but got ' .. typeof(Obj))
+      pcall(function() 
+        Registry.CachedInstances[Obj] = 'invalid' 
+        Obj.Parent = nil
+      end)
+    end,
+    replace = function(Old, New)
+      assert(typeof(Old) == "Instance", 'Invalid argument #1 to "cache.replace", instance expected, but got ' .. typeof(Old))
+      assert(typeof(New) == "Instance", 'Invalid argument #2 to "cache.replace", instance expected, but got ' .. typeof(New))
+      Registry.CachedInstances[Old] = New
+      New.Name = Old.Name
+      New.Parent = Old.Parent
+      Old.Parent = nil
+    end
+  }
+  
   local Debug = getLibrary("Debug")(ENV)
   ENV.debug = Debug
+  
   table.foreach(FileSystem, function(Index, Value)
     ENV[Index] = Value
   end)

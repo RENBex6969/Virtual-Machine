@@ -20,10 +20,12 @@ local FuncScopes = {}
 
 local Id = 1
 local function PushFunctionScope()
+  local Parent = FuncScopes[#FuncScopes] -- current parent
   table.insert(FuncScopes, {
     ID = Id,
     UpvalueId = 1,
-    ConstantId = 1
+    ConstantId = 1,
+    ParentID = Parent and Parent.ID or nil
   })
   Id += 1
 end
@@ -146,19 +148,22 @@ function Unparser:readstatement(Stat : table, shouldAddDo : boolean, ... : any?)
   
   if Tag == "localfunction" then
     PushFunctionScope()
-    
     local Info = PeepFunctionScope()
     
     local Parameters, Vararg = self:readparameters(Stat.body)
     local Name = self:readexpr(Stat.name)
-    local Out = string.format("function%s", Parameters)
+    local Body = string.format("function%s%s end", Parameters, self:readexpr(Stat.body.body, true, nil, Vararg))
     
-    Out ..= self:readexpr(Stat.body.body, true, nil, Vararg) .. " end"
+    local FuncWrap
+    if Info.ParentID then
+      FuncWrap = string.format("FUNC(%s, %d, %d)", Body, Info.ID, Info.ParentID)
+    else
+      FuncWrap = string.format("FUNC(%s, %d)", Body, Info.ID)
+    end
     
-    Out = string.format("local %s; %s = FUNC(%s, %s)", Name, Name, Out, Info.ID)
+    local Out = string.format("local %s; %s = %s", Name, Name, FuncWrap)
     
     PopFunctionScope()
-    
     return Out
   end
   
@@ -398,7 +403,11 @@ function Unparser:readexpr(Stat, isValue, ...)
     
     PopFunctionScope()
     
-    return string.format("FUNC(function%s%s end, %d)", Parameters, Body, Info.ID)
+    if Info.ParentID then
+      return string.format("FUNC(function%s%s end, %d, %d)", Parameters, Body, Info.ID, Info.ParentID)
+    else
+      return string.format("FUNC(function%s%s end, %d)", Parameters, Body, Info.ID)
+    end
   end
   
   if Tag == "conditional" then

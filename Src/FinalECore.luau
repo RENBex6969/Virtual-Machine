@@ -21,7 +21,9 @@ return (function(ECore, LCore, Game, Registry)
   local Org = {}
   
   ECore.CALL = function(Func, ...)
-    return (FuncHooks[Func] or Func)(...)
+    local ToCall = (FuncHooks[Func] or Func)
+    
+    return ToCall(...)
   end
   
   ECore.NAMECALL = function(Table, Index, Table, ...)
@@ -30,13 +32,23 @@ return (function(ECore, LCore, Game, Registry)
     return (FuncHooks[Function] or Function)(Table, ...)
   end
   
-  ECore.FUNC = function(fn, id)
+  ECore.FUNC = function(fn, id, Parent)
     Functions[id] = { 
       UpvalueHooks = {},
-      ConstantHooks = {}
+      ConstantHooks = {},
+      ProtosHooks = {},
+      Function = fn
     }
     
     Functionsids[fn] = id
+    local ParentFunc = Functions[Parent]
+    
+    if ParentFunc and ParentFunc.ProtosHooks then
+      local Hook = ParentFunc.ProtosHooks[id - Parent]
+      if Hook then
+        return Hook
+      end
+    end
     
     return fn
   end
@@ -84,7 +96,39 @@ return (function(ECore, LCore, Game, Registry)
       end
     end
   end
-
+  
+  ECore.debug.setproto = function(FN, Index, New)
+    local ID = Functionsids[FN]
+    
+    if ID then
+      local Info = Functions[ID]
+      
+      if Info then
+        Info.ProtosHooks[Index] = New
+      end
+    end
+  end
+  --[[
+  ECore.debug.getconstant = function(FN, Index)
+    local ID = Functionsids[FN]
+    if ID then
+      local Info = Functions[ID]
+      if Info then
+        return Info.Constants[Index]
+      end
+    end
+  end
+  
+  ECore.debug.getconstants = function(FN)
+    local ID = Functionsids[FN]
+    if ID then
+      local Info = Functions[ID]
+      if Info then
+        return Info.Constants
+      end
+    end
+  end
+]]
   ECore.hookfunction = function(Old, New)
     FuncHooks[Old] = New
     Org[New] = Old
@@ -151,9 +195,11 @@ return (function(ECore, LCore, Game, Registry)
         table.insert(Compiled, Obj) 
       end 
     end
+    
     table.insert(Compiled, {
       Name = "Invisicam"
     })
+  
     return Compiled
   end
 end)
