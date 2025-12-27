@@ -44,6 +44,9 @@ Sandbox:Run([[
 ## Missing
 Functions that are deemed useful and submitted for review will be added. Additionally, any functions defined in the **sUNC** [standard](https://docs.sunc.su/About/what-is-sunc/) will be implemented as part of future updates.
 
+## Updates
+I'm currently in the process of refactoring all modules to improve security and readability.
+
 ### Roblox 
 
 1. HttpService - Full
