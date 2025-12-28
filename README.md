@@ -14,6 +14,9 @@ Runs Roblox **scripts** inside an executor-like environment with a **partial Rob
 2. Install [Lute](https://github.com/luau-lang/lute/releases/tag/0.1.0-nightly.20251115) version **2025.1115**
 3. Fork this repository
 
+### Support
+https://discord.gg/83cdMp4ujv
+
 ### Syntax Issue
 Try setting **HookOp** to false in ``config.json``
 
