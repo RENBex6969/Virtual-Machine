@@ -14,6 +14,9 @@ Runs Roblox **scripts** inside an executor-like environment with a **partial Rob
 2. Install [Lute](https://github.com/luau-lang/lute/releases/tag/0.1.0-nightly.20251115) version **2025.1115**
 3. Fork this repository
 
+### Syntax Issue
+Try setting **HookOp** to false in ``config.json``
+
 ### Usage
 The VM has bulit in API system you can use it on your scripts!
 
@@ -43,6 +46,9 @@ Sandbox:Run([[
 
 ## Missing
 Functions that are deemed useful and submitted for review will be added. Additionally, any functions defined in the **sUNC** [standard](https://docs.sunc.su/About/what-is-sunc/) will be implemented as part of future updates.
+
+## Updates
+I'm currently in the process of refactoring all modules to improve security and readability.
 
 ### Roblox 
 

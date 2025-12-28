@@ -24,6 +24,7 @@ local function PushFunctionScope()
   table.insert(FuncScopes, {
     ID = Id,
     UpvalueId = 1,
+    Upvalues = {},
     ConstantId = 1,
     ParentID = Parent and Parent.ID or nil
   })
@@ -155,10 +156,11 @@ function Unparser:readstatement(Stat : table, shouldAddDo : boolean, ... : any?)
     local Body = string.format("function%s%s end", Parameters, self:readexpr(Stat.body.body, true, nil, Vararg))
     
     local FuncWrap
+    local UpvaluesTable = table.concat(Info.Upvalues, ", ")
     if Info.ParentID then
-      FuncWrap = string.format("FUNC(%s, %d, %d)", Body, Info.ID, Info.ParentID)
+      FuncWrap = string.format("FUNC(%s, { %s }, %d, %d)", Body, UpvaluesTable, Info.ID, Info.ParentID)
     else
-      FuncWrap = string.format("FUNC(%s, %d)", Body, Info.ID)
+      FuncWrap = string.format("FUNC(%s, { %s }, %d)", Body, UpvaluesTable, Info.ID)
     end
     
     local Out = string.format("local %s; %s = %s", Name, Name, FuncWrap)
@@ -385,7 +387,9 @@ function Unparser:readexpr(Stat, isValue, ...)
     local Name = (Stat.name or Stat.token).text
     
     if isValue and Info ~= nil and Stat.upvalue then
+      Info.Upvalues[Info.UpvalueId] = Name
       local Out = string.format("UPVALUE(%s, %s, %s)", Name, Info.ID, Info.UpvalueId)
+      
       Info.UpvalueId += 1
       return Out
     end
@@ -399,14 +403,16 @@ function Unparser:readexpr(Stat, isValue, ...)
     local Info = PeepFunctionScope()
     
     local Parameters, Vararg = self:readparameters(Stat.body)
-    local Body = self:readexpr(Stat.body.body, nil, nil, Vararg)
+    local Body = self:readexpr(Stat.body.body, true, nil, Vararg)
     
     PopFunctionScope()
     
+    local UpvaluesTable = table.concat(Info.Upvalues, ", ")
+    
     if Info.ParentID then
-      return string.format("FUNC(function%s%s end, %d, %d)", Parameters, Body, Info.ID, Info.ParentID)
+      return string.format("FUNC(function%s%s end, { %s }, %d, %d)", Parameters, Body, UpvaluesTable, Info.ID, Info.ParentID)
     else
-      return string.format("FUNC(function%s%s end, %d)", Parameters, Body, Info.ID)
+      return string.format("FUNC(function%s%s end, { %s }, %d)", Parameters, Body, UpvaluesTable, Info.ID)
     end
   end
   
@@ -449,7 +455,7 @@ function Unparser:readexpr(Stat, isValue, ...)
       Out = "CALL(" .. Func
       
       for i, Arg in Stat.arguments do
-        Out ..= (i == 1 and ", " or ",") .. self:readexpr(Arg.node)
+        Out ..= (i == 1 and ", " or ",") .. self:readexpr(Arg.node, true)
       end
       
       Out ..= ")"

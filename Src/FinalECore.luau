@@ -32,11 +32,12 @@ return (function(ECore, LCore, Game, Registry)
     return (FuncHooks[Function] or Function)(Table, ...)
   end
   
-  ECore.FUNC = function(fn, id, Parent)
+  ECore.FUNC = function(fn, Upvalues, id, Parent)
     Functions[id] = { 
       UpvalueHooks = {},
       ConstantHooks = {},
       ProtosHooks = {},
+      Upvalues = Upvalues,
       Function = fn
     }
     
@@ -83,6 +84,7 @@ return (function(ECore, LCore, Game, Registry)
       local info = Functions[id]
       if info then
         info.UpvalueHooks[upvalID] = value
+        info.Upvalues[upvalID] = value
       end
     end
   end
@@ -99,15 +101,34 @@ return (function(ECore, LCore, Game, Registry)
   
   ECore.debug.setproto = function(FN, Index, New)
     local ID = Functionsids[FN]
-    
     if ID then
       local Info = Functions[ID]
-      
       if Info then
         Info.ProtosHooks[Index] = New
       end
     end
   end
+  
+  ECore.debug.getupvalue = function(FN, Index)
+    local ID = Functionsids[FN]
+    if ID then
+      local Info = Functions[ID]
+      if Info then
+        return Info.Upvalues[Index]
+      end
+    end
+  end
+  
+  ECore.debug.getupvalues = function(FN, Index)
+    local ID = Functionsids[FN]
+    if ID then
+      local Info = Functions[ID]
+      if Info then
+        return Info.Upvalues
+      end
+    end
+  end
+  
   --[[
   ECore.debug.getconstant = function(FN, Index)
     local ID = Functionsids[FN]

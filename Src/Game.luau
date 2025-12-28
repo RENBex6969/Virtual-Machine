@@ -70,7 +70,7 @@ local CoreGuiProperties = require("./Game/CoreGui/Properties")(Roblox, Game)
 local CoreGuiMethods = require("./Game/CoreGui/Methods")(Roblox, Game)
 
 local WorkspaceProperties = require("./Game/Workspace/Properties")(Roblox, Game)
-local WorkspaceMethods = require("./Game/Workspace/Methods")(Roblox)
+local WorkspaceMethods = require("./Game/Workspace/Methods")(Roblox, Game)
 
 
 local Instance = Roblox.Instance
